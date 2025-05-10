@@ -1,11 +1,11 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { useNavigation, StackActions } from '@react-navigation/native';
-import type { NavigationProp } from '@react-navigation/native';
-import UserProfileModal from './UserProfileModal';
-import { signOut } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
+import React, { useState } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
+import { useNavigation, StackActions } from "@react-navigation/native";
+import type { NavigationProp } from "@react-navigation/native";
+import UserProfileModal from "./UserProfileModal";
+import { signOut } from "firebase/auth";
+import { auth } from "../firebaseConfig";
 
 export type RootStackParamList = {
   Home: undefined;
@@ -23,39 +23,49 @@ export default function NavBar(props: NavBarProps) {
     await signOut(auth);
     setModalVisible(false);
     // Optionally, trigger navigation to Login if needed
-    navigation.dispatch(StackActions.replace('Login'));
+    navigation.dispatch(StackActions.replace("Login"));
   };
 
   return (
     <LinearGradient
-      colors={['#8e054a', '#1a1a6e']}
+      colors={["#8C0101", "#20007B"]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 0 }}
       style={styles.gradient}
     >
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => navigation.navigate('Home')}>
+        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
           <Image
-            source={require('../../assets/silverscreen-logo.png')}
+            source={require("../../assets/silverscreen-logo.png")}
             style={styles.logo}
             resizeMode="contain"
           />
         </TouchableOpacity>
+        <Text style={styles.logoText}>SILVERSCREEN</Text>
         <View style={styles.spacer} />
         <View style={styles.linksWrapper}>
-          <TouchableOpacity onPress={() => navigation.navigate('WatchHistory')}>
+          <TouchableOpacity onPress={() => navigation.navigate("WatchHistory")}>
             <Text style={styles.link}>Watch History</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Watchlist')}>
+          <TouchableOpacity onPress={() => navigation.navigate("Watchlist")}>
             <Text style={styles.link}>Watchlist</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Recommendation')}>
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Recommendation")}
+          >
             <Text style={styles.link}>Recommendation</Text>
           </TouchableOpacity>
         </View>
         <View style={styles.spacer} />
-        <TouchableOpacity style={styles.userIconBtn} onPress={() => setModalVisible(true)}>
-          <Text style={styles.userIcon}>👤</Text>
+        <TouchableOpacity
+          style={styles.userIconBtn}
+          onPress={() => setModalVisible(true)}
+        >
+          <Image
+            source={require("../../assets/user-icon-white.png")}
+            style={{ width: 40, height: 40 }}
+            resizeMode="contain"
+          />
         </TouchableOpacity>
       </View>
       <UserProfileModal
@@ -69,42 +79,49 @@ export default function NavBar(props: NavBarProps) {
 
 const styles = StyleSheet.create({
   gradient: {
-    paddingTop: 24,
-    paddingBottom: 12,
+    paddingTop: 4,
+    paddingBottom: 4,
     paddingHorizontal: 16,
   },
   container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   logo: {
-    width: 48,
-    height: 48,
+    width: 54,
+    height: 54,
+  },
+  logoText: {
+    color: "#fff",
+    fontSize: 20,
+    fontWeight: "bold",
+    marginLeft: 16, // spacing between logo and text
   },
   spacer: {
     flex: 1,
   },
   linksWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
     flex: 2,
+    marginLeft: 840,
   },
   link: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 18,
     marginHorizontal: 16,
-    fontWeight: 'bold',
+    fontWeight: "bold",
   },
   userIconBtn: {
-    position: 'absolute',
+    position: "absolute",
     top: 10,
     right: 16,
     zIndex: 20,
   },
   userIcon: {
     fontSize: 32,
-    color: '#fff',
+    color: "#fff",
   },
-}); 
+});

@@ -1,18 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, ActivityIndicator } from 'react-native';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import axios from 'axios';
-import NavBar from './src/components/NavBar';
-import WatchlistScreen from './src/screens/WatchlistScreen';
-import WatchHistoryScreen from './src/screens/WatchHistoryScreen';
-import HomeScreen from './src/screens/HomeScreen';
-import LoginScreen from './src/screens/LoginScreen';
-import SignUpScreen from './src/screens/SignUpScreen';
-import { Movie, Genre, TMDB_API_KEY } from './src/types/movie';
-import RecommendationScreen from './src/screens/RecommendationScreen';
-import MovieDetailsScreen from './src/screens/MovieDetailsScreen';
+import React, { useEffect, useState } from "react";
+import { NavigationContainer } from "@react-navigation/native";
+import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import {
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  ScrollView,
+  ActivityIndicator,
+} from "react-native";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import axios from "axios";
+import NavBar from "./src/components/NavBar";
+import WatchlistScreen from "./src/screens/WatchlistScreen";
+import WatchHistoryScreen from "./src/screens/WatchHistoryScreen";
+import HomeScreen from "./src/screens/HomeScreen";
+import LoginScreen from "./src/screens/LoginScreen";
+import SignUpScreen from "./src/screens/SignUpScreen";
+import { Movie, Genre, TMDB_API_KEY } from "./src/types/movie";
+import RecommendationScreen from "./src/screens/RecommendationScreen";
+import MovieDetailsScreen from "./src/screens/MovieDetailsScreen";
 
 type RootStackParamList = {
   Login: undefined;
@@ -38,7 +46,7 @@ export default function App() {
         );
         setGenres(genresRes.data.genres);
       } catch (err) {
-        console.error('Error fetching genres:', err);
+        console.error("Error fetching genres:", err);
       } finally {
         setLoading(false);
       }
@@ -57,16 +65,19 @@ export default function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName="Login">
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName="Login"
+      >
         <Stack.Screen name="Login" component={LoginScreen} />
         <Stack.Screen name="SignUp" component={SignUpScreen} />
-        <Stack.Screen 
-          name="Home" 
-          component={HomeScreen} 
+        <Stack.Screen
+          name="Home"
+          component={HomeScreen}
           initialParams={{ genres }}
         />
-        <Stack.Screen 
-          name="MovieDetails" 
+        <Stack.Screen
+          name="MovieDetails"
           component={MovieDetailsScreen}
           initialParams={{ genres }}
         />
@@ -81,19 +92,19 @@ export default function App() {
 const styles = StyleSheet.create({
   loadingContainer: {
     flex: 1,
-    backgroundColor: '#222',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#222",
+    justifyContent: "center",
+    alignItems: "center",
   },
   // Details styles
   detailsRoot: {
     flex: 1,
-    backgroundColor: '#222',
+    backgroundColor: "#222",
     padding: 16,
     paddingTop: 32,
   },
   detailsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 16,
   },
   detailsPoster: {
@@ -104,82 +115,82 @@ const styles = StyleSheet.create({
   },
   detailsCol: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
   },
   detailsTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 28,
     marginBottom: 4,
   },
   detailsGenres: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     marginBottom: 8,
   },
   detailsInfo: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
     marginBottom: 8,
   },
   detailsOverviewTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 18,
     marginTop: 8,
     marginBottom: 2,
   },
   detailsOverview: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
     marginBottom: 16,
   },
   detailsButtonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 16,
     marginTop: 8,
   },
   detailsActionBtn: {
-    backgroundColor: '#a11a1a',
+    backgroundColor: "#a11a1a",
     borderRadius: 4,
     paddingHorizontal: 32,
     paddingVertical: 12,
     marginRight: 16,
   },
   detailsActionBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 18,
   },
   reviewBubble: {
-    backgroundColor: '#888',
+    backgroundColor: "#888",
     borderRadius: 30,
     padding: 16,
     marginBottom: 16,
     marginTop: 8,
   },
   reviewUser: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
     marginBottom: 2,
   },
   reviewText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
   },
   writeReviewBtn: {
-    backgroundColor: '#888',
+    backgroundColor: "#888",
     borderRadius: 30,
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingHorizontal: 48,
     paddingVertical: 12,
     marginTop: 16,
     marginBottom: 32,
   },
   writeReviewText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 22,
   },
 });

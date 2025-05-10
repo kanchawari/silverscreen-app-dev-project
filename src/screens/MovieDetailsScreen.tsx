@@ -1,12 +1,19 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, Image, TouchableOpacity } from 'react-native';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { RootStackParamList } from '../navigation/AppNavigator';
-import { theme } from '../theme/theme';
-import NavBar from '../components/NavBar';
-import { Movie, Genre } from '../types/movie';
+import React from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from "react-native";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/AppNavigator";
+import { theme } from "../theme/theme";
+import NavBar from "../components/NavBar";
+import { Movie, Genre } from "../types/movie";
 
-type Props = NativeStackScreenProps<RootStackParamList, 'MovieDetails'>;
+type Props = NativeStackScreenProps<RootStackParamList, "MovieDetails">;
 
 const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
   const { movie, genres } = route.params;
@@ -14,20 +21,20 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
   // Mock reviews
   const reviews = [
     {
-      id: '1',
-      user: 'Athena Jang',
+      id: "1",
+      user: "Athena Jang",
       text: "The action scenes were NEXT LEVEL 😎 Marvel's bad kids understood the assignment 💣",
     },
     {
-      id: '2',
-      user: 'John Smith',
-      text: 'Marvel finally went dark and it WORKED. This was crazy good.',
+      id: "2",
+      user: "John Smith",
+      text: "Marvel finally went dark and it WORKED. This was crazy good.",
     },
   ];
 
   const getGenreNames = (genreIds: number[]): string[] => {
     return genreIds
-      .map(id => genres.find((genre: Genre) => genre.id === id)?.name)
+      .map((id) => genres.find((genre: Genre) => genre.id === id)?.name)
       .filter((name): name is string => name !== undefined);
   };
 
@@ -36,7 +43,9 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
       <NavBar />
       <View style={styles.detailsRow}>
         <Image
-          source={{ uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}` }}
+          source={{
+            uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+          }}
           style={styles.detailsPoster}
         />
         <View style={styles.detailsCol}>
@@ -44,7 +53,7 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
             {movie.title} ({movie.release_date?.slice(0, 4)})
           </Text>
           <Text style={styles.detailsGenres}>
-            {getGenreNames(movie.genre_ids).join(' | ')}
+            {getGenreNames(movie.genre_ids).join(" | ")}
           </Text>
           <Text style={styles.detailsInfo}>
             Release Date: {movie.release_date}
@@ -79,12 +88,12 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
 const styles = StyleSheet.create({
   detailsRoot: {
     flex: 1,
-    backgroundColor: '#222',
-    padding: 16,
-    paddingTop: 32,
+    backgroundColor: "#222",
+    /*padding: 16,
+    paddingTop: 32,*/
   },
   detailsRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     marginBottom: 16,
   },
   detailsPoster: {
@@ -95,84 +104,84 @@ const styles = StyleSheet.create({
   },
   detailsCol: {
     flex: 1,
-    justifyContent: 'flex-start',
+    justifyContent: "flex-start",
   },
   detailsTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 28,
     marginBottom: 4,
   },
   detailsGenres: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 16,
     marginBottom: 8,
   },
   detailsInfo: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
     marginBottom: 8,
   },
   detailsOverviewTitle: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 18,
     marginTop: 8,
     marginBottom: 2,
   },
   detailsOverview: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
     marginBottom: 16,
   },
   detailsButtonRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 16,
     marginTop: 8,
   },
   detailsActionBtn: {
-    backgroundColor: '#a11a1a',
+    backgroundColor: "#a11a1a",
     borderRadius: 4,
     paddingHorizontal: 32,
     paddingVertical: 12,
     marginRight: 16,
   },
   detailsActionBtnText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 18,
   },
   reviewBubble: {
-    backgroundColor: '#888',
+    backgroundColor: "#888",
     borderRadius: 30,
     padding: 16,
     marginBottom: 16,
     marginTop: 8,
   },
   reviewUser: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 16,
     marginBottom: 2,
   },
   reviewText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 15,
   },
   writeReviewBtn: {
-    backgroundColor: '#888',
+    backgroundColor: "#888",
     borderRadius: 30,
-    alignSelf: 'center',
+    alignSelf: "center",
     paddingHorizontal: 48,
     paddingVertical: 12,
     marginTop: 16,
     marginBottom: 32,
   },
   writeReviewText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 22,
   },
 });
 
-export default MovieDetailsScreen; 
+export default MovieDetailsScreen;

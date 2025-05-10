@@ -1,4 +1,4 @@
-export const TMDB_API_KEY = '6dfcadad631d6942cd4db94965b58ad0';
+export const TMDB_API_KEY = "6dfcadad631d6942cd4db94965b58ad0";
 
 export type Movie = {
   id: number;
@@ -7,9 +7,11 @@ export type Movie = {
   release_date: string;
   genre_ids: number[];
   overview: string;
+  popularity: number;
+  adult: boolean;
 };
 
 export type Genre = {
   id: number;
   name: string;
-}; 
+};
