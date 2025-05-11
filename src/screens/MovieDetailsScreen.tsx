@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -9,14 +9,33 @@ import {
 } from "react-native";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import axios from "axios";
 import { theme } from "../theme/theme";
 import NavBar from "../components/NavBar";
-import { Movie, Genre } from "../types/movie";
+import { Movie, Genre, TMDB_API_KEY } from "../types/movie";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
+import { auth, db } from "../firebaseConfig";
 
-type Props = NativeStackScreenProps<RootStackParamList, "MovieDetails">;
+type MovieDetailsScreenProps = NativeStackScreenProps<
+  RootStackParamList,
+  "MovieDetails"
+>;
 
-const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
+export default function MovieDetailsScreen({
+  navigation,
+  route,
+}: MovieDetailsScreenProps) {
   const { movie, genres } = route.params;
+
+  console.log("Route params:", route.params);
+  console.log("MovieDetails received movie:", movie);
+
+  const [movieDetails, setMovieDetails] = useState<any>(null);
+  const [cast, setCast] = useState<string[]>([]);
+  const [director, setDirector] = useState<string | null>(null);
+
+  const [isInWatchlist, setIsInWatchlist] = useState(false);
+  const [isWatched, setIsWatched] = useState(false);
 
   // Mock reviews
   const reviews = [
@@ -32,14 +51,142 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
     },
   ];
 
-  const getGenreNames = (genreIds: number[]): string[] => {
-    return genreIds
-      .map((id) => genres.find((genre: Genre) => genre.id === id)?.name)
-      .filter((name): name is string => name !== undefined);
+  useEffect(() => {
+    const fetchUserData = async () => {
+      if (!auth.currentUser) return;
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userDoc = await getDoc(userRef);
+
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const watchlist: string[] = data.watchlist || [];
+        const watchhistory: string[] = data.watchhistory || [];
+
+        setIsInWatchlist(watchlist.includes(movie.id.toString()));
+        setIsWatched(watchhistory.includes(movie.id.toString()));
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  const updateWatchlist = async () => {
+    if (!auth.currentUser) return;
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) return;
+
+    const data = userDoc.data();
+    const watchlist: string[] = data.watchlist || [];
+
+    let newWatchlist;
+    if (watchlist.includes(movie.id.toString())) {
+      // Remove
+      newWatchlist = watchlist.filter((id) => id !== movie.id.toString());
+      setIsInWatchlist(false);
+    } else {
+      // Add
+      newWatchlist = [...watchlist, movie.id.toString()];
+      setIsInWatchlist(true);
+    }
+
+    await updateDoc(userRef, { watchlist: newWatchlist });
+  };
+
+  const updateWatchHistory = async () => {
+    if (!auth.currentUser) return;
+    const userRef = doc(db, "users", auth.currentUser.uid);
+    const userDoc = await getDoc(userRef);
+
+    if (!userDoc.exists()) return;
+
+    const data = userDoc.data();
+    const watchhistory: string[] = data.watchhistory || [];
+
+    let newWatchHistory;
+    if (watchhistory.includes(movie.id.toString())) {
+      // Remove
+      newWatchHistory = watchhistory.filter((id) => id !== movie.id.toString());
+      setIsWatched(false);
+    } else {
+      // Add
+      newWatchHistory = [...watchhistory, movie.id.toString()];
+      setIsWatched(true);
+    }
+
+    await updateDoc(userRef, { watchhistory: newWatchHistory });
+  };
+
+  useEffect(() => {
+    const fetchDetailsAndCredits = async () => {
+      try {
+        const apiKey = TMDB_API_KEY;
+        const movieId = movie.id;
+
+        // Fetch movie details and credits in parallel
+        const [detailsRes, creditsRes] = await Promise.all([
+          axios.get(
+            `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=en-US`
+          ),
+          axios.get(
+            `https://api.themoviedb.org/3/movie/${movieId}/credits?api_key=${TMDB_API_KEY}&language=en-US`
+          ),
+        ]);
+
+        const detailsData = detailsRes.data;
+        const creditsData = creditsRes.data;
+
+        setMovieDetails(detailsData);
+
+        // Top 5 cast
+        const topCast =
+          creditsData.cast?.slice(0, 5).map((member: any) => member.name) || [];
+        setCast(topCast);
+
+        // Find the director from the crew
+        const director = creditsData.crew?.find(
+          (person: any) => person.job === "Director"
+        );
+        setDirector(director?.name || null);
+      } catch (error) {
+        console.error("Error fetching movie data:", error);
+      }
+    };
+
+    fetchDetailsAndCredits();
+  }, []);
+
+  const getGenreNames = (movie: any): string[] => {
+    if (movie.genre_ids && Array.isArray(movie.genre_ids)) {
+      return movie.genre_ids
+        .map(
+          (id: number) => genres.find((genre: Genre) => genre.id === id)?.name
+        )
+        .filter(
+          (name: string | undefined): name is string => name !== undefined
+        );
+    }
+
+    if (movie.genres && Array.isArray(movie.genres)) {
+      return movie.genres
+        .map((genre: { id: number; name: string }) => genre.name)
+        .filter(
+          (name: string | undefined): name is string => name !== undefined
+        );
+    }
+
+    return [];
+  };
+
+  const formatDate = (dateStr: string): string => {
+    if (!dateStr) return "";
+    const [year, month, day] = dateStr.split("-");
+    return `${day}/${month}/${year}`;
   };
 
   return (
-    <ScrollView style={styles.detailsRoot}>
+    <ScrollView style={styles.detailsRoot} showsVerticalScrollIndicator={false}>
       <NavBar />
       <View style={styles.detailsRow}>
         <Image
@@ -53,19 +200,52 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
             {movie.title} ({movie.release_date?.slice(0, 4)})
           </Text>
           <Text style={styles.detailsGenres}>
-            {getGenreNames(movie.genre_ids).join(" | ")}
+            {getGenreNames(movie).join(" | ")}
           </Text>
           <Text style={styles.detailsInfo}>
-            Release Date: {movie.release_date}
+            Release Date: {formatDate(movie.release_date)}
+          </Text>
+          <Text style={styles.detailsInfo}>
+            Duration:{" "}
+            {movieDetails?.runtime
+              ? `${movieDetails.runtime} minutes`
+              : "Loading..."}
+          </Text>
+          <Text style={styles.detailsInfo}>
+            Director: {director || "Loading..."}
+          </Text>
+          <Text style={styles.detailsInfo}>
+            Cast: {cast.length > 0 ? cast.join(", ") : "Loading..."}
           </Text>
           <Text style={styles.detailsOverviewTitle}>Overview</Text>
           <Text style={styles.detailsOverview}>{movie.overview}</Text>
           <View style={styles.detailsButtonRow}>
-            <TouchableOpacity style={styles.detailsActionBtn}>
-              <Text style={styles.detailsActionBtnText}>+ watchlist</Text>
+            <TouchableOpacity
+              style={
+                isInWatchlist
+                  ? styles.detailsActionBtnBlack
+                  : styles.detailsActionBtn
+              }
+              onPress={updateWatchlist}
+            >
+              <Text style={styles.detailsActionBtnText}>
+                {isInWatchlist
+                  ? "- Remove from Watchlist"
+                  : "+ Add to Watchlist"}
+              </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.detailsActionBtn}>
-              <Text style={styles.detailsActionBtnText}>+ mark as watched</Text>
+
+            <TouchableOpacity
+              style={
+                isWatched
+                  ? styles.detailsActionBtnBlack
+                  : styles.detailsActionBtn
+              }
+              onPress={updateWatchHistory}
+            >
+              <Text style={styles.detailsActionBtnText}>
+                {isWatched ? "- Unmark as Watched" : "+ Mark as Watched"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -83,23 +263,25 @@ const MovieDetailsScreen: React.FC<Props> = ({ route }) => {
       </TouchableOpacity>
     </ScrollView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   detailsRoot: {
     flex: 1,
-    backgroundColor: "#222",
+    backgroundColor: "#151518",
     /*padding: 16,
     paddingTop: 32,*/
   },
   detailsRow: {
     flexDirection: "row",
     marginBottom: 16,
+    marginTop: 40,
+    marginHorizontal: 120,
   },
   detailsPoster: {
-    width: 180,
-    height: 260,
-    borderRadius: 8,
+    width: 280,
+    height: 420,
+    /*borderRadius: 8,*/
     marginRight: 24,
   },
   detailsCol: {
@@ -145,6 +327,19 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     paddingVertical: 12,
     marginRight: 16,
+    minWidth: 300,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  detailsActionBtnBlack: {
+    backgroundColor: "#0d0d0d",
+    borderRadius: 4,
+    paddingHorizontal: 32,
+    paddingVertical: 12,
+    marginRight: 16,
+    minWidth: 300,
+    alignItems: "center",
+    justifyContent: "center",
   },
   detailsActionBtnText: {
     color: "#fff",
@@ -183,5 +378,3 @@ const styles = StyleSheet.create({
     fontSize: 22,
   },
 });
-
-export default MovieDetailsScreen;

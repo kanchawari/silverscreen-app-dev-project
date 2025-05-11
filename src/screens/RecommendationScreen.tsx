@@ -67,7 +67,7 @@ export default function RecommendationScreen() {
   };
 
   return (
-    <View style={{ flex: 1, backgroundColor: "#18181a" }}>
+    <View style={{ flex: 1, backgroundColor: "#151518" }}>
       <NavBar />
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>What are we feeling today?</Text>

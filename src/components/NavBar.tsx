@@ -42,7 +42,7 @@ export default function NavBar(props: NavBarProps) {
           />
         </TouchableOpacity>
         <Text style={styles.logoText}>SILVERSCREEN</Text>
-        <View style={styles.spacer} />
+
         <View style={styles.linksWrapper}>
           <TouchableOpacity onPress={() => navigation.navigate("WatchHistory")}>
             <Text style={styles.link}>Watch History</Text>
@@ -55,18 +55,17 @@ export default function NavBar(props: NavBarProps) {
           >
             <Text style={styles.link}>Recommendation</Text>
           </TouchableOpacity>
+          <TouchableOpacity
+            style={styles.userIconBtn}
+            onPress={() => setModalVisible(true)}
+          >
+            <Image
+              source={require("../../assets/user-icon-white.png")}
+              style={{ width: 40, height: 40 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
         </View>
-        <View style={styles.spacer} />
-        <TouchableOpacity
-          style={styles.userIconBtn}
-          onPress={() => setModalVisible(true)}
-        >
-          <Image
-            source={require("../../assets/user-icon-white.png")}
-            style={{ width: 40, height: 40 }}
-            resizeMode="contain"
-          />
-        </TouchableOpacity>
       </View>
       <UserProfileModal
         visible={modalVisible}
@@ -86,7 +85,7 @@ const styles = StyleSheet.create({
   container: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
+    justifyContent: "space-between",
   },
   logo: {
     width: 54,
@@ -96,17 +95,15 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 16, // spacing between logo and text
-  },
-  spacer: {
-    flex: 1,
+    marginLeft: 20, // spacing between logo and text
   },
   linksWrapper: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
-    flex: 2,
-    marginLeft: 840,
+    justifyContent: "flex-end",
+    flex: 1,
+    gap: 12,
+    marginRight: 8,
   },
   link: {
     color: "#fff",
@@ -115,10 +112,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
   },
   userIconBtn: {
-    position: "absolute",
-    top: 10,
-    right: 16,
-    zIndex: 20,
+    marginLeft: 16,
   },
   userIcon: {
     fontSize: 32,

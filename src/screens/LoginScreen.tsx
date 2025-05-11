@@ -1,8 +1,15 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '../firebaseConfig';
-import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { auth } from "../firebaseConfig";
+import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
 // Define navigation types
 type RootStackParamList = {
@@ -11,22 +18,22 @@ type RootStackParamList = {
   SignUp: undefined;
 };
 
-type LoginScreenProps = NativeStackScreenProps<RootStackParamList, 'Login'>;
+type LoginScreenProps = NativeStackScreenProps<RootStackParamList, "Login">;
 
 export default function LoginScreen({ navigation }: LoginScreenProps) {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const handleLogin = async () => {
     setLoading(true);
-    setError('');
+    setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.replace('Home');
+      navigation.replace("Home");
     } catch (err: any) {
-      setError(err.message || 'Login failed');
+      setError(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
@@ -53,10 +60,21 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
         secureTextEntry
       />
       {error ? <Text style={styles.error}>{error}</Text> : null}
-      <TouchableOpacity style={styles.button} onPress={handleLogin} disabled={loading}>
-        {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Login</Text>}
+      <TouchableOpacity
+        style={styles.button}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Login</Text>
+        )}
       </TouchableOpacity>
-      <TouchableOpacity onPress={() => navigation.replace('SignUp')} style={styles.linkBtn}>
+      <TouchableOpacity
+        onPress={() => navigation.replace("SignUp")}
+        style={styles.linkBtn}
+      >
         <Text style={styles.linkText}>Don't have an account? Sign Up</Text>
       </TouchableOpacity>
     </View>
@@ -66,48 +84,48 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#222',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#151518",
+    justifyContent: "center",
+    alignItems: "center",
     padding: 24,
   },
   title: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 32,
-    fontWeight: 'bold',
+    fontWeight: "bold",
     marginBottom: 32,
   },
   input: {
-    width: '100%',
-    backgroundColor: '#333',
-    color: '#fff',
+    width: "100%",
+    backgroundColor: "#333",
+    color: "#fff",
     padding: 12,
     borderRadius: 8,
     marginBottom: 16,
   },
   button: {
-    backgroundColor: '#a11a1a',
+    backgroundColor: "#a11a1a",
     borderRadius: 8,
     paddingVertical: 14,
     paddingHorizontal: 48,
     marginTop: 8,
   },
   buttonText: {
-    color: '#fff',
-    fontWeight: 'bold',
+    color: "#fff",
+    fontWeight: "bold",
     fontSize: 18,
   },
   error: {
-    color: '#ff6b6b',
+    color: "#ff6b6b",
     marginBottom: 8,
-    textAlign: 'center',
+    textAlign: "center",
   },
   linkBtn: {
     marginTop: 16,
   },
   linkText: {
-    color: '#fff',
-    textDecorationLine: 'underline',
+    color: "#fff",
+    textDecorationLine: "underline",
     fontSize: 16,
   },
-}); 
+});

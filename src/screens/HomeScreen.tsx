@@ -8,19 +8,15 @@ import {
   Image,
   TextInput,
   ActivityIndicator,
+  Dimensions,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { RootStackParamList } from "../navigation/AppNavigator";
 import axios from "axios";
 import NavBar from "../components/NavBar";
 import { Movie, Genre, TMDB_API_KEY } from "../types/movie";
+import nsfwKeywords from "../nsfwKeywords";
 import { auth } from "../firebaseConfig";
-
-type RootStackParamList = {
-  Home: { genres: Genre[] };
-  MovieDetails: { movie: Movie };
-  Watchlist: undefined;
-  WatchHistory: undefined;
-};
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -29,6 +25,7 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
+  const [numColumns, setNumColumns] = useState(5);
 
   useEffect(() => {
     const searchMovies = async () => {
@@ -55,6 +52,8 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
         setLoading(false);
         return;
       }
+
+      // If search is not empty
 
       const query = searchQuery.toLowerCase().trim();
 
@@ -124,8 +123,11 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
             const popularityScore = Math.min(3, movie.popularity / 100); // adjust divisor if needed
             score += popularityScore;
 
-            // Check for 'sex' or 'Sex' in title or overview and set score to 0 if found
-            if (title.includes("sex") || overview.includes("sex")) {
+            // Explicit content filtering
+            const isNSFW = nsfwKeywords.some(
+              (word) => title.includes(word) || overview.includes(word)
+            );
+            if (isNSFW) {
               score = 0;
             }
 
@@ -149,10 +151,33 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
     return () => clearTimeout(debounceTimer);
   }, [searchQuery, genres]);
 
+  // Dynamic number of columns
+  useEffect(() => {
+    const updateNumColumns = () => {
+      const screenWidth = Dimensions.get("window").width;
+      const itemWidth = 300; // adjust based on your item size
+      const columns = Math.floor(screenWidth / itemWidth);
+      setNumColumns(columns > 0 ? columns : 1);
+    };
+
+    updateNumColumns(); // initial
+
+    const subscription = Dimensions.addEventListener(
+      "change",
+      updateNumColumns
+    );
+
+    return () => {
+      subscription.remove();
+    };
+  }, []);
+
   const renderItem = ({ item }: { item: Movie }) => (
     <TouchableOpacity
       style={styles.posterContainer}
-      onPress={() => navigation.navigate("MovieDetails", { movie: item })}
+      onPress={() =>
+        navigation.navigate("MovieDetails", { movie: item, genres })
+      }
     >
       <Image
         source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
@@ -192,12 +217,13 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
         </View>
       ) : (
         <FlatList
+          key={numColumns} // This forces a re-render when numColumns changes
           data={movies}
           keyExtractor={(item) => item.id.toString()}
-          numColumns={5}
+          numColumns={numColumns}
           renderItem={renderItem}
           contentContainerStyle={styles.grid}
-          style={{ marginHorizontal: 146 }}
+          style={styles.flatList}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -208,7 +234,7 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#222",
+    backgroundColor: "#151518",
     /*padding: 16,
     paddingTop: 32,*/
   },
@@ -236,6 +262,9 @@ const styles = StyleSheet.create({
     height: 360,
     /*borderRadius: 4,*/
     backgroundColor: "#ccc",
+  },
+  flatList: {
+    alignSelf: "center",
   },
   grid: {
     paddingBottom: 32,
@@ -267,6 +296,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   popularityText: {
+    // For debugging
     fontSize: 14, // Adjust the size as needed
     color: "#ffffff", // Choose a color that contrasts well with your background
     position: "absolute", // Position it over or under the poster
