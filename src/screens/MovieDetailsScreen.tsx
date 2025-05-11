@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
   detailsActionBtnBlack: {
-    backgroundColor: "#0d0d0d",
+    backgroundColor: "#3F3F3F",
     borderRadius: 4,
     paddingHorizontal: 32,
     paddingVertical: 12,
