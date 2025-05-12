@@ -242,7 +242,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: "bold",
     color: "#fff",
-    marginBottom: 8,
+    marginBottom: 20,
     textAlign: "center",
   },
   subtitle: {
@@ -253,8 +253,9 @@ const styles = StyleSheet.create({
   },
   posterContainer: {
     /*flex: 1,*/
-    margin: 20,
-    marginBottom: 4,
+    /*margin: 20,*/
+    marginHorizontal: 20,
+    marginBottom: 20,
     alignItems: "center",
   },
   poster: {

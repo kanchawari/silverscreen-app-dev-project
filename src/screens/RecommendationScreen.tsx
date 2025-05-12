@@ -82,7 +82,16 @@ export default function RecommendationScreen() {
               ]}
               onPress={() => setSelectedGenre(genre)}
             >
-              <Text style={styles.cloudText}>{genre.name}</Text>
+              <Text
+                key={genre.id}
+                style={
+                  selectedGenre?.id === genre.id
+                    ? styles.cloudTextSelected
+                    : styles.cloudText
+                }
+              >
+                {genre.name}
+              </Text>
             </TouchableOpacity>
           ))}
         </View>
@@ -92,9 +101,9 @@ export default function RecommendationScreen() {
           disabled={!selectedGenre || loading}
         >
           {loading ? (
-            <ActivityIndicator color="#222" />
+            <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.randomText}>Recommend</Text>
+            <Text style={styles.randomText}>Recommend a Movie</Text>
           )}
         </TouchableOpacity>
       </ScrollView>
@@ -109,11 +118,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: 8,
   },
   title: {
-    color: "#d3d3d3",
-    fontSize: 32,
+    color: "#fff",
+    fontSize: 34,
     fontWeight: "bold",
     textAlign: "center",
-    marginBottom: 24,
+    marginBottom: 30,
+    marginTop: 48,
   },
   error: {
     color: "#ff6b6b",
@@ -125,17 +135,17 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "center",
     marginBottom: 32,
-    gap: 16,
+    gap: 18,
   },
   cloud: {
     backgroundColor: "transparent",
     borderColor: "#d3d3d3",
     borderWidth: 3,
     borderRadius: 40,
-    paddingHorizontal: 28,
-    paddingVertical: 12,
+    paddingHorizontal: 32,
+    paddingVertical: 16,
     margin: 8,
-    minWidth: 80,
+    minWidth: 120,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -145,19 +155,27 @@ const styles = StyleSheet.create({
   },
   cloudText: {
     color: "#fff",
-    fontSize: 20,
+    fontSize: 24,
+    fontWeight: "500",
+  },
+  cloudTextSelected: {
+    color: "#151518",
+    fontSize: 24,
     fontWeight: "500",
   },
   randomBtn: {
-    backgroundColor: "#d3d3d3",
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 48,
-    marginTop: 16,
+    backgroundColor: "#a11a1a",
+    borderRadius: 30,
+    paddingVertical: 16,
+    width: 320,
+    height: 70,
+    alignItems: "center",
+    justifyContent: "center",
+    marginTop: 8,
   },
   randomText: {
-    color: "#222",
-    fontSize: 22,
+    color: "#fff",
+    fontSize: 24,
     fontWeight: "500",
   },
 });

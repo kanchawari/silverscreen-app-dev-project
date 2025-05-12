@@ -5,6 +5,7 @@ import axios from "axios";
 
 import HomeScreen from "../screens/HomeScreen";
 import MovieDetailsScreen from "../screens/MovieDetailsScreen";
+import MovieReviewScreen from "../screens/MovieReviewScreen";
 import WatchlistScreen from "../screens/WatchlistScreen";
 import WatchHistoryScreen from "../screens/WatchHistoryScreen";
 import LoginScreen from "../screens/LoginScreen";
@@ -17,6 +18,7 @@ export type RootStackParamList = {
   SignUp: undefined;
   Home: { genres: Genre[] };
   MovieDetails: { movie: Movie; genres: Genre[] };
+  MovieReview: { movie: Movie };
   Watchlist: { genres: Genre[] };
   WatchHistory: { genres: Genre[] };
   Recommendation: undefined;
@@ -73,6 +75,7 @@ export default function AppNavigator() {
         initialParams={{ genres }}
       />
       <Stack.Screen name="MovieDetails" component={MovieDetailsScreen} />
+      <Stack.Screen name="MovieReview" component={MovieReviewScreen} />
       <Stack.Screen
         name="Watchlist"
         component={WatchlistScreen}

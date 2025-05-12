@@ -34,14 +34,17 @@ export default function NavBar(props: NavBarProps) {
       style={styles.gradient}
     >
       <View style={styles.container}>
-        <TouchableOpacity onPress={() => navigation.navigate("Home")}>
+        <TouchableOpacity
+          onPress={() => navigation.navigate("Home")}
+          style={styles.logoContainer} // Add this
+        >
           <Image
             source={require("../../assets/silverscreen-logo.png")}
             style={styles.logo}
             resizeMode="contain"
           />
+          <Text style={styles.logoText}>SILVERSCREEN</Text>
         </TouchableOpacity>
-        <Text style={styles.logoText}>SILVERSCREEN</Text>
 
         <View style={styles.linksWrapper}>
           <TouchableOpacity onPress={() => navigation.navigate("WatchHistory")}>
@@ -87,6 +90,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "space-between",
   },
+  logoContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
   logo: {
     width: 54,
     height: 54,
@@ -95,7 +102,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 20, // spacing between logo and text
+    marginLeft: 14, // spacing between logo and text
   },
   linksWrapper: {
     flexDirection: "row",
