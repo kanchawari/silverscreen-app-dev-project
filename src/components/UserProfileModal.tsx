@@ -1,8 +1,15 @@
-import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
-import { signOut } from 'firebase/auth';
-import { auth, db } from '../firebaseConfig';
-import { collection, query, where, getDocs } from 'firebase/firestore';
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+} from "react-native";
+import { signOut } from "firebase/auth";
+import { auth, db } from "../firebaseConfig";
+import { collection, query, where, getDocs } from "firebase/firestore";
 
 interface UserProfileModalProps {
   visible: boolean;
@@ -10,8 +17,12 @@ interface UserProfileModalProps {
   onSignOut: () => void;
 }
 
-export default function UserProfileModal({ visible, onClose, onSignOut }: UserProfileModalProps) {
-  const [username, setUsername] = useState('');
+export default function UserProfileModal({
+  visible,
+  onClose,
+  onSignOut,
+}: UserProfileModalProps) {
+  const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -19,15 +30,18 @@ export default function UserProfileModal({ visible, onClose, onSignOut }: UserPr
       if (!auth.currentUser) return;
       setLoading(true);
       try {
-        const q = query(collection(db, 'users'), where('uid', '==', auth.currentUser.uid));
+        const q = query(
+          collection(db, "users"),
+          where("uid", "==", auth.currentUser.uid)
+        );
         const querySnapshot = await getDocs(q);
         if (!querySnapshot.empty) {
           setUsername(querySnapshot.docs[0].data().username);
         } else {
-          setUsername(auth.currentUser.email || '');
+          setUsername(auth.currentUser.email || "");
         }
       } catch (e) {
-        setUsername(auth.currentUser?.email || '');
+        setUsername(auth.currentUser?.email || "");
       } finally {
         setLoading(false);
       }
@@ -56,7 +70,7 @@ export default function UserProfileModal({ visible, onClose, onSignOut }: UserPr
             <Text style={styles.username}>{username}</Text>
           )}
           <TouchableOpacity style={styles.signOutBtn} onPress={onSignOut}>
-            <Text style={styles.signOutText}>sign out</Text>
+            <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -67,57 +81,57 @@ export default function UserProfileModal({ visible, onClose, onSignOut }: UserPr
 const styles = StyleSheet.create({
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0,0,0,0.3)",
+    justifyContent: "center",
+    alignItems: "center",
   },
   modal: {
     width: 320,
-    backgroundColor: '#ddd',
+    backgroundColor: "#ddd",
     borderRadius: 24,
-    alignItems: 'center',
+    alignItems: "center",
     padding: 32,
-    position: 'relative',
+    position: "relative",
   },
   closeBtn: {
-    position: 'absolute',
+    position: "absolute",
     top: 12,
     right: 16,
     zIndex: 10,
   },
   closeText: {
     fontSize: 28,
-    color: '#888',
+    color: "#888",
   },
   iconCircle: {
     width: 180,
     height: 180,
     borderRadius: 90,
-    backgroundColor: '#000',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "#000",
+    justifyContent: "center",
+    alignItems: "center",
     marginBottom: 24,
   },
   icon: {
     fontSize: 100,
-    color: '#fff',
+    color: "#fff",
   },
   username: {
     fontSize: 32,
-    color: '#222',
+    color: "#222",
     marginBottom: 32,
-    fontWeight: '500',
+    fontWeight: "500",
   },
   signOutBtn: {
-    backgroundColor: '#222',
+    backgroundColor: "#222",
     borderRadius: 20,
     paddingVertical: 12,
     paddingHorizontal: 48,
     marginTop: 8,
   },
   signOutText: {
-    color: '#fff',
+    color: "#fff",
     fontSize: 28,
-    fontWeight: '400',
+    fontWeight: "400",
   },
-}); 
+});
