@@ -3,6 +3,7 @@ import {
   Modal,
   View,
   Text,
+  Image,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
@@ -62,13 +63,19 @@ export default function UserProfileModal({
             <Text style={styles.closeText}>×</Text>
           </TouchableOpacity>
           <View style={styles.iconCircle}>
-            <Text style={styles.icon}>👤</Text>
+            <Image
+              source={require("../../assets/user-icon-white.png")}
+              style={{ width: 90, height: 90 }}
+              resizeMode="contain"
+            />
           </View>
-          {loading ? (
-            <ActivityIndicator color="#000" />
-          ) : (
-            <Text style={styles.username}>{username}</Text>
-          )}
+          <View style={styles.contentWrapper}>
+            {loading ? (
+              <ActivityIndicator color="#000" />
+            ) : (
+              <Text style={styles.username}>{username}</Text>
+            )}
+          </View>
           <TouchableOpacity style={styles.signOutBtn} onPress={onSignOut}>
             <Text style={styles.signOutText}>Sign Out</Text>
           </TouchableOpacity>
@@ -82,11 +89,13 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "center",
-    alignItems: "center",
+    justifyContent: "flex-start", // align from top
+    alignItems: "flex-end", // align to the right
+    paddingTop: 17, // spacing from top
+    paddingRight: 20, // spacing from right
   },
   modal: {
-    width: 320,
+    width: 240,
     backgroundColor: "#ddd",
     borderRadius: 24,
     alignItems: "center",
@@ -104,34 +113,35 @@ const styles = StyleSheet.create({
     color: "#888",
   },
   iconCircle: {
-    width: 180,
-    height: 180,
+    width: 120,
+    height: 120,
     borderRadius: 90,
     backgroundColor: "#000",
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 24,
   },
-  icon: {
-    fontSize: 100,
-    color: "#fff",
-  },
   username: {
-    fontSize: 32,
+    fontSize: 26,
     color: "#222",
-    marginBottom: 32,
     fontWeight: "500",
+  },
+  contentWrapper: {
+    height: 40, // fixed height, tweak as needed
+    justifyContent: "center",
+    alignItems: "center",
+    marginBottom: 10,
   },
   signOutBtn: {
     backgroundColor: "#222",
     borderRadius: 20,
     paddingVertical: 12,
-    paddingHorizontal: 48,
+    paddingHorizontal: 40,
     marginTop: 8,
   },
   signOutText: {
     color: "#fff",
-    fontSize: 28,
-    fontWeight: "400",
+    fontSize: 22,
+    fontWeight: "bold",
   },
 });

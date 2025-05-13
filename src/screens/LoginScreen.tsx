@@ -11,7 +11,6 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebaseConfig";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 
-// Define navigation types
 type RootStackParamList = {
   Login: undefined;
   Home: any;

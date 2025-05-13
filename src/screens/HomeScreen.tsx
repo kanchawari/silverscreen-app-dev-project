@@ -44,7 +44,11 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
             allMovies = [...allMovies, ...res.data.results];
           }
 
-          setMovies(allMovies);
+          const uniqueMovies = allMovies.filter(
+            (movie, index, self) =>
+              index === self.findIndex((m) => m.id === movie.id)
+          );
+          setMovies(uniqueMovies);
         } catch (err) {
           console.error("Error fetching popular movies:", err);
           setMovies([]);
