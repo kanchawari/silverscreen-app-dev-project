@@ -49,29 +49,11 @@ export default function MovieDetailsScreen({
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [isWatched, setIsWatched] = useState(false);
 
+  const [watchlistLoading, setWatchlistLoading] = useState(true);
+  const [watchedLoading, setWatchedLoading] = useState(true);
+
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
-
-  /*
-  const reviews = [
-    {
-      id: "1",
-      userId: "Athena Jang",
-      rating: 4.5,
-      reviewText:
-        "The action scenes were NEXT LEVEL 😎 Marvel's bad kids understood the assignment 💣",
-      timestamp: new Date("2025-04-20T14:00:00Z"),
-    },
-    {
-      id: "2",
-      user: "John Smith",
-      rating: 5,
-      reviewText:
-        "Marvel finally went dark and it WORKED. This was crazy good.",
-      timestamp: new Date("2025-03-15T10:00:00Z"),
-    },
-  ];
-  */
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -87,6 +69,8 @@ export default function MovieDetailsScreen({
         setIsInWatchlist(watchlist.includes(movie.id.toString()));
         setIsWatched(watchhistory.includes(movie.id.toString()));
       }
+      setWatchlistLoading(false);
+      setWatchedLoading(false);
     };
 
     fetchUserData();
@@ -122,56 +106,77 @@ export default function MovieDetailsScreen({
 
   useFocusEffect(
     useCallback(() => {
-      fetchReviews(); // This runs every time the screen comes into focus
+      fetchReviews();
     }, [movie.id])
   );
 
   const updateWatchlist = async () => {
-    if (!auth.currentUser) return;
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    const userDoc = await getDoc(userRef);
+    try {
+      setWatchlistLoading(true);
 
-    if (!userDoc.exists()) return;
+      if (!auth.currentUser) return;
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userDoc = await getDoc(userRef);
 
-    const data = userDoc.data();
-    const watchlist: string[] = data.watchlist || [];
+      if (!userDoc.exists()) return;
 
-    let newWatchlist;
-    if (watchlist.includes(movie.id.toString())) {
-      // Remove
-      newWatchlist = watchlist.filter((id) => id !== movie.id.toString());
-      setIsInWatchlist(false);
-    } else {
-      // Add
-      newWatchlist = [...watchlist, movie.id.toString()];
-      setIsInWatchlist(true);
+      const data = userDoc.data();
+      const watchlist: string[] = data.watchlist || [];
+
+      let newWatchlist;
+      let newState: boolean;
+      if (watchlist.includes(movie.id.toString())) {
+        // Remove
+        newWatchlist = watchlist.filter((id) => id !== movie.id.toString());
+        newState = false;
+      } else {
+        // Add
+        newWatchlist = [...watchlist, movie.id.toString()];
+        newState = true;
+      }
+
+      await updateDoc(userRef, { watchlist: newWatchlist });
+      setIsInWatchlist(newState);
+    } catch (error) {
+      console.error("Error updating watchlist:", error);
+    } finally {
+      setWatchlistLoading(false);
     }
-
-    await updateDoc(userRef, { watchlist: newWatchlist });
   };
 
   const updateWatchHistory = async () => {
-    if (!auth.currentUser) return;
-    const userRef = doc(db, "users", auth.currentUser.uid);
-    const userDoc = await getDoc(userRef);
+    try {
+      setWatchedLoading(true);
+      if (!auth.currentUser) return;
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userDoc = await getDoc(userRef);
 
-    if (!userDoc.exists()) return;
+      if (!userDoc.exists()) return;
 
-    const data = userDoc.data();
-    const watchhistory: string[] = data.watchhistory || [];
+      const data = userDoc.data();
+      const watchhistory: string[] = data.watchhistory || [];
 
-    let newWatchHistory;
-    if (watchhistory.includes(movie.id.toString())) {
-      // Remove
-      newWatchHistory = watchhistory.filter((id) => id !== movie.id.toString());
-      setIsWatched(false);
-    } else {
-      // Add
-      newWatchHistory = [...watchhistory, movie.id.toString()];
-      setIsWatched(true);
+      let newWatchHistory;
+      let newState: boolean;
+      if (watchhistory.includes(movie.id.toString())) {
+        // Remove
+        newWatchHistory = watchhistory.filter(
+          (id) => id !== movie.id.toString()
+        );
+        newState = false;
+      } else {
+        // Add
+        newWatchHistory = [...watchhistory, movie.id.toString()];
+        newState = true;
+      }
+
+      await updateDoc(userRef, { watchhistory: newWatchHistory });
+      setIsWatched(newState);
+    } catch (error) {
+      console.error("Error updating watch history:", error);
+    } finally {
+      setWatchedLoading(false);
     }
-
-    await updateDoc(userRef, { watchhistory: newWatchHistory });
   };
 
   useEffect(() => {
@@ -301,12 +306,17 @@ export default function MovieDetailsScreen({
                     : styles.detailsActionBtn
                 }
                 onPress={updateWatchlist}
+                disabled={watchlistLoading}
               >
-                <Text style={styles.detailsActionBtnText}>
-                  {isInWatchlist
-                    ? "- Remove from Watchlist"
-                    : "+ Add to Watchlist"}
-                </Text>
+                {watchlistLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.detailsActionBtnText}>
+                    {isInWatchlist
+                      ? "- Remove from Watchlist"
+                      : "+ Add to Watchlist"}
+                  </Text>
+                )}
               </TouchableOpacity>
 
               <TouchableOpacity
@@ -316,12 +326,18 @@ export default function MovieDetailsScreen({
                     : styles.detailsActionBtn
                 }
                 onPress={updateWatchHistory}
+                disabled={watchedLoading}
               >
-                <Text style={styles.detailsActionBtnText}>
-                  {isWatched ? "- Unmark as Watched" : "+ Mark as Watched"}
-                </Text>
+                {watchedLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.detailsActionBtnText}>
+                    {isWatched ? "- Unmark as Watched" : "+ Mark as Watched"}
+                  </Text>
+                )}
               </TouchableOpacity>
             </View>
+
             <TouchableOpacity
               style={styles.writeReviewBtn}
               onPress={() => navigation.navigate("MovieReview", { movie })}
