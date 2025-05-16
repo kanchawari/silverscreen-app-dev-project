@@ -47,11 +47,11 @@ export default function NavBar(props: NavBarProps) {
         </TouchableOpacity>
 
         <View style={styles.linksWrapper}>
-          <TouchableOpacity onPress={() => navigation.navigate("WatchHistory")}>
-            <Text style={styles.link}>Watch History</Text>
-          </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate("Watchlist")}>
             <Text style={styles.link}>Watchlist</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("WatchHistory")}>
+            <Text style={styles.link}>Watch History</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={() => navigation.navigate("Recommendation")}

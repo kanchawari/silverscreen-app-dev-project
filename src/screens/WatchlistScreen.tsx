@@ -14,6 +14,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import axios from "axios";
 import NavBar from "../components/NavBar";
+import { useFocusEffect } from "@react-navigation/native";
 import { Movie, Genre, TMDB_API_KEY } from "../types/movie";
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
@@ -32,40 +33,49 @@ export default function WatchlistScreen({
   const [loading, setLoading] = useState(false);
   const [numColumns, setNumColumns] = useState(5);
 
-  useEffect(() => {
-    const fetchWatchlistMovies = async () => {
-      if (!auth.currentUser) return;
+  useFocusEffect(
+    React.useCallback(() => {
+      const fetchWatchlistMovies = async () => {
+        if (!auth.currentUser) return;
 
-      setLoading(true);
-      try {
-        const userRef = doc(db, "users", auth.currentUser.uid);
-        const userDoc = await getDoc(userRef);
+        setLoading(true);
+        try {
+          const userRef = doc(db, "users", auth.currentUser.uid);
+          const userDoc = await getDoc(userRef);
 
-        if (userDoc.exists()) {
-          const { watchlist } = userDoc.data();
-          if (Array.isArray(watchlist) && watchlist.length > 0) {
-            const moviePromises = watchlist.map((id: number) =>
-              axios.get(`https://api.themoviedb.org/3/movie/${id}`, {
-                params: { api_key: TMDB_API_KEY },
-              })
-            );
+          if (userDoc.exists()) {
+            const { watchlist } = userDoc.data();
+            if (Array.isArray(watchlist) && watchlist.length > 0) {
+              const reversedWatchlist = [...watchlist].reverse();
+              const moviePromises = reversedWatchlist.map((id: number) =>
+                axios.get(`https://api.themoviedb.org/3/movie/${id}`, {
+                  params: { api_key: TMDB_API_KEY },
+                })
+              );
 
-            const responses = await Promise.all(moviePromises);
-            const moviesData = responses.map((res) => res.data);
-            setMovies(moviesData);
-          } else {
-            setMovies([]);
+              const responses = await Promise.all(moviePromises);
+              const moviesData = responses.map((res) => res.data);
+
+              moviesData.sort(
+                (a, b) =>
+                  reversedWatchlist.indexOf(a.id) -
+                  reversedWatchlist.indexOf(b.id)
+              );
+              setMovies(moviesData);
+            } else {
+              setMovies([]);
+            }
           }
+        } catch (err) {
+          console.error("Failed to fetch watch history", err);
+        } finally {
+          setLoading(false);
         }
-      } catch (err) {
-        console.error("Failed to fetch watch history", err);
-      } finally {
-        setLoading(false);
-      }
-    };
+      };
 
-    fetchWatchlistMovies();
-  }, []);
+      fetchWatchlistMovies();
+    }, [])
+  );
 
   // Dynamic number of columns
   useEffect(() => {

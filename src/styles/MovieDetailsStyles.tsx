@@ -96,6 +96,15 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     marginTop: 8,
+    width: "81%",
+    alignSelf: "center",
+  },
+  myReviewBubble: {
+    backgroundColor: "#3f425f",
+    borderRadius: 10,
+    padding: 12,
+    marginBottom: 16,
+    marginTop: 8,
     width: "81%", // To prevent full horizontal width usage
     alignSelf: "center",
   },
@@ -127,6 +136,18 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "bold",
     fontSize: 18,
+  },
+
+  iconWrapper: {
+    width: 20, // fixed width & height matching your icon size
+    height: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  deleteIcon: {
+    width: 16,
+    height: 16,
+    resizeMode: "contain",
   },
 
   reviewDate: {

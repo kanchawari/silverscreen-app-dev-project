@@ -9,6 +9,7 @@ import {
   TouchableOpacity,
 } from "react-native";
 import StarRating from "react-native-star-rating-widget";
+import Toast from "react-native-toast-message";
 import { formatDistanceToNow } from "date-fns";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -41,53 +42,49 @@ export default function MovieReviewScreen({
   const [stars, setStars] = useState(0);
   const [reviewText, setReviewText] = useState("");
 
+  const [loading, setLoading] = useState(false);
+
   const submitReview = async () => {
+    if (loading) return; // Prevent duplicate submissions
+    setLoading(true);
     try {
-      // Get the user and movie ID
-      const userId = auth.currentUser?.uid; // Ensure user is logged in
+      const userId = auth.currentUser?.uid;
       if (!userId) {
         alert("You must be logged in to submit a review.");
+        setLoading(false);
         return;
       }
 
       const movieId = movie.id;
-
-      // Get a reference to the movie document
       const movieRef = doc(db, "movies", String(movieId));
       const userRef = doc(db, "users", userId);
       const movieSnap = await getDoc(movieRef);
       const userSnap = await getDoc(userRef);
 
       if (!movieSnap.exists()) {
-        // Optionally, create the movie document if it doesn't exist
-        await setDoc(movieRef, {
-          title: movie.title, // Add other necessary fields for the movie
-        });
+        await setDoc(movieRef, { title: movie.title });
       }
 
       if (!userSnap.exists()) {
         alert("User data not found.");
+        setLoading(false);
         return;
       }
 
-      const username = userSnap.data().username; // Get the username from Firestore
+      const username = userSnap.data().username;
 
-      // Prepare the review object
       const review = {
         userId,
         username,
         rating: stars,
         reviewText: reviewText,
-        timestamp: new Date(), // Use server timestamp for consistency
+        timestamp: new Date(),
       };
 
-      // Add the review to the 'reviews' subcollection
       await addDoc(
         collection(db, "movies", String(movieId), "reviews"),
         review
       );
-
-      // Update the user document with the new review (optional)
 
       await updateDoc(userRef, {
         reviews: arrayUnion({
@@ -98,22 +95,32 @@ export default function MovieReviewScreen({
         }),
       });
 
-      // Clear the review input and star rating
-      setStars(0);
-      setReviewText(""); // Assuming reviewText is a state for the review text input
+      Toast.show({
+        type: "success",
+        text1: "Review submitted successfully!",
+        position: "top",
+        visibilityTime: 2000,
+      });
 
-      // Optionally, navigate back or show success message
-      alert("Review submitted successfully!");
-      // navigation.goBack();
+      setStars(0);
+      setReviewText("");
     } catch (error) {
+      Toast.show({
+        type: "error",
+        text1: "Error submitting review",
+        text2: "Please try again.",
+      });
       console.error("Error submitting review:", error);
       alert("There was an error submitting your review. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
     <View style={styles.detailsRoot}>
       <NavBar />
+      <Toast />
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={styles.backButton}
@@ -158,10 +165,16 @@ export default function MovieReviewScreen({
               onChangeText={setReviewText}
             />
             <TouchableOpacity
-              style={styles.submitReviewBtn}
+              style={[
+                styles.submitReviewBtn,
+                loading ? { backgroundColor: "#555" } : null,
+              ]}
               onPress={submitReview}
+              disabled={loading}
             >
-              <Text style={styles.submitReviewText}>Submit Review</Text>
+              <Text style={styles.submitReviewText}>
+                {loading ? "Submitting..." : "Submit Review"}
+              </Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -231,11 +244,13 @@ const styles = StyleSheet.create({
     backgroundColor: "#a11a1a",
     borderRadius: 8,
     alignSelf: "center",
-    paddingHorizontal: 48,
+    paddingHorizontal: 24,
     paddingVertical: 12,
     marginTop: 30,
     marginBottom: 32,
     marginLeft: 20,
+    width: 240,
+    alignItems: "center",
   },
   submitReviewText: {
     color: "#fff",

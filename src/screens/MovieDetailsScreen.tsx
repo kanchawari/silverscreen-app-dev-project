@@ -11,6 +11,7 @@ import {
 import { useFocusEffect } from "@react-navigation/native";
 import { useCallback } from "react";
 import StarRating from "react-native-star-rating-widget";
+import Toast from "react-native-toast-message";
 import { formatDistanceToNow } from "date-fns";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -22,6 +23,7 @@ import {
   doc,
   getDoc,
   getDocs,
+  deleteDoc,
   updateDoc,
   arrayUnion,
   collection,
@@ -54,6 +56,8 @@ export default function MovieDetailsScreen({
 
   const [reviews, setReviews] = useState<any[]>([]);
   const [loadingReviews, setLoadingReviews] = useState(true);
+
+  const [deletingReviewId, setDeletingReviewId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -92,11 +96,25 @@ export default function MovieDetailsScreen({
         fetchedReviews.push({ id: doc.id, ...doc.data() });
       });
 
-      console.log("Movie ID: ", movie.id);
-      console.log("Number of reviews found: ", querySnapshot.size);
-      console.log("Fetched reviews:", fetchedReviews);
-      setReviews(fetchedReviews);
-      console.log("Number of reviews:", reviews.length);
+      // Sort reviews: user's reviews first, then by most recent timestamp
+      const sortedReviews = fetchedReviews.sort((a, b) => {
+        const currentUser = auth.currentUser?.uid;
+
+        const aIsUser = a.userId === currentUser ? 0 : 1;
+        const bIsUser = b.userId === currentUser ? 0 : 1;
+
+        // Sort by: user's reviews (0) before others (1)
+        if (aIsUser !== bIsUser) {
+          return aIsUser - bIsUser;
+        }
+
+        // Then sort by timestamp (most recent first)
+        const aTime = a.timestamp?.toDate?.() || new Date(0);
+        const bTime = b.timestamp?.toDate?.() || new Date(0);
+        return bTime.getTime() - aTime.getTime();
+      });
+
+      setReviews(sortedReviews);
     } catch (error) {
       console.error("Error fetching reviews:", error);
     } finally {
@@ -109,6 +127,57 @@ export default function MovieDetailsScreen({
       fetchReviews();
     }, [movie.id])
   );
+
+  const deleteReview = async (
+    reviewId: string,
+    movieId: number,
+    reviewText: string
+  ) => {
+    const userId = auth.currentUser?.uid;
+    if (!userId) return;
+
+    try {
+      setDeletingReviewId(reviewId); // Start loading
+
+      // Delete review from movie subcollection
+      const reviewRef = doc(db, "movies", String(movieId), "reviews", reviewId);
+      await deleteDoc(reviewRef);
+
+      // Remove review from user field
+      const userRef = doc(db, "users", userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        const reviews = userSnap.data().reviews || [];
+
+        const updatedReviews = reviews.filter(
+          (rev: any) =>
+            !(
+              String(rev.movieId) === String(movieId) &&
+              rev.reviewText === reviewText
+            )
+        );
+
+        await updateDoc(userRef, { reviews: updatedReviews });
+      }
+
+      Toast.show({
+        type: "success",
+        text1: "Review deleted",
+        position: "top",
+        visibilityTime: 2000,
+      });
+
+      fetchReviews(); // Refresh reviews list
+    } catch (error) {
+      console.error("Error deleting review:", error);
+      Toast.show({
+        type: "error",
+        text1: "Error deleting review",
+      });
+    } finally {
+      setDeletingReviewId(null); // Stop loading
+    }
+  };
 
   const updateWatchlist = async () => {
     try {
@@ -367,37 +436,76 @@ export default function MovieDetailsScreen({
             No reviews yet. Be the first to write one!
           </Text>
         ) : (
-          reviews.map((item) => (
-            <View key={item.id} style={styles.reviewBubble}>
-              <View style={styles.reviewHeaderRow1}>
-                <Image
-                  source={require("../../assets/user-icon-white.png")}
-                  style={styles.userIcon}
-                />
-                <Text style={styles.reviewUser}>{item.username}</Text>
-              </View>
+          reviews.map((item) => {
+            const isUserReview = auth.currentUser?.uid === item.userId;
 
-              <View style={styles.reviewHeaderRow2}>
-                <StarRating
-                  rating={item.rating}
-                  starSize={18}
-                  starStyle={{ marginHorizontal: 1 }}
-                  onChange={() => {}}
-                  enableSwiping={false}
-                  animationConfig={{
-                    scale: 1,
-                    easing: () => 0,
-                    duration: 0,
-                  }}
-                />
-                <Text style={styles.reviewDate}>
-                  {formatReviewDate(item.timestamp.toDate())}
-                </Text>
-              </View>
+            return (
+              <View
+                key={item.id}
+                style={[
+                  styles.reviewBubble,
+                  item.userId === auth.currentUser?.uid &&
+                    styles.myReviewBubble,
+                ]}
+              >
+                <View style={styles.reviewHeaderRow1}>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      flex: 1,
+                    }}
+                  >
+                    <Image
+                      source={require("../../assets/user-icon-white.png")}
+                      style={styles.userIcon}
+                    />
+                    <Text style={styles.reviewUser}>{item.username}</Text>
+                  </View>
 
-              <Text style={styles.reviewText}>{item.reviewText}</Text>
-            </View>
-          ))
+                  {isUserReview && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        deleteReview(item.id, movie.id, item.reviewText)
+                      }
+                      disabled={deletingReviewId === item.id}
+                    >
+                      <View style={styles.iconWrapper}>
+                        {deletingReviewId === item.id ? (
+                          <ActivityIndicator size="small" color="white" />
+                        ) : (
+                          <Image
+                            source={require("../../assets/x-icon.png")}
+                            style={styles.deleteIcon}
+                          />
+                        )}
+                      </View>
+                    </TouchableOpacity>
+                  )}
+                </View>
+
+                <View style={styles.reviewHeaderRow2}>
+                  <StarRating
+                    rating={item.rating}
+                    starSize={18}
+                    starStyle={{ marginHorizontal: 1 }}
+                    onChange={() => {}}
+                    enableSwiping={false}
+                    animationConfig={{
+                      scale: 1,
+                      easing: () => 0,
+                      duration: 0,
+                    }}
+                  />
+                  <Text style={styles.reviewDate}>
+                    {formatReviewDate(item.timestamp.toDate())}
+                  </Text>
+                </View>
+
+                <Text style={styles.reviewText}>{item.reviewText}</Text>
+              </View>
+            );
+          })
         )}
       </ScrollView>
     </View>
