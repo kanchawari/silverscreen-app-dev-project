@@ -70,7 +70,7 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
             </View>
 
             <View style={styles.rightSection}>
-              <Text style={styles.title}>Sign Up Web</Text>
+              <Text style={styles.title}>Sign Up</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Username"
@@ -120,52 +120,59 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
           </View>
         </LinearGradient>
       ) : (
-        <View style={styles.container}>
-          <Text style={styles.title}>Sign Up Mobile</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Username"
-            placeholderTextColor="#888"
-            value={username}
-            onChangeText={setUsername}
-            autoCapitalize="none"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Email"
-            placeholderTextColor="#888"
-            value={email}
-            onChangeText={setEmail}
-            autoCapitalize="none"
-            keyboardType="email-address"
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Password"
-            placeholderTextColor="#888"
-            value={password}
-            onChangeText={setPassword}
-            secureTextEntry
-          />
-          {error ? <Text style={styles.error}>{error}</Text> : null}
-          <TouchableOpacity
-            style={styles.buttonMobile}
-            onPress={handleSignUp}
-            disabled={loading}
-          >
-            {loading ? (
-              <ActivityIndicator color="#fff" />
-            ) : (
-              <Text style={styles.buttonText}>Sign Up</Text>
-            )}
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigation.replace("Login")}
-            style={styles.linkBtn}
-          >
-            <Text style={styles.linkText}>Already have an account? Login</Text>
-          </TouchableOpacity>
-        </View>
+        <LinearGradient
+          colors={["#8C0101", "#20007B"]}
+          style={styles.container}
+        >
+          <View style={styles.loginBoxMobile}>
+            <Text style={styles.title}>Sign Up</Text>
+            <TextInput
+              style={styles.inputMobile}
+              placeholder="Username"
+              placeholderTextColor="#888"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.inputMobile}
+              placeholder="Email"
+              placeholderTextColor="#888"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <TextInput
+              style={styles.inputMobile}
+              placeholder="Password"
+              placeholderTextColor="#888"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <TouchableOpacity
+              style={styles.buttonMobile}
+              onPress={handleSignUp}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Sign Up</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.replace("Login")}
+              style={styles.linkBtn}
+            >
+              <Text style={styles.linkText}>
+                Already have an account? Login
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
       )}
     </>
   );

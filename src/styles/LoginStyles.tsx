@@ -19,7 +19,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
-    elevation: 6, // for Android
+    elevation: 6,
+  },
+  loginBoxMobile: {
+    backgroundColor: "#212121",
+    borderRadius: 16,
+    padding: 24,
+    width: "90%",
+    height: "40%",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 6,
+    alignItems: "center",
+    justifyContent: "center",
   },
   leftSection: {
     flex: 1,
@@ -33,6 +47,11 @@ const styles = StyleSheet.create({
     width: "80%",
     height: "80%",
     marginBottom: 16,
+  },
+  logoMobile: {
+    width: "40%",
+    height: "40%",
+    marginBottom: 0,
   },
   rightSection: {
     flex: 1,
@@ -55,7 +74,7 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   inputMobile: {
-    width: "90%",
+    width: "100%",
     backgroundColor: "#333",
     color: "#fff",
     padding: 12,
@@ -76,12 +95,13 @@ const styles = StyleSheet.create({
   buttonMobile: {
     backgroundColor: "#a11a1a",
     borderRadius: 8,
-    paddingVertical: 14,
+    paddingVertical: 6,
     paddingHorizontal: 0,
     marginTop: 8,
-    height: "6%",
-    width: "32%",
+    height: 42,
+    width: "45%",
     alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
     color: "#fff",

@@ -34,14 +34,20 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
     setError("");
     try {
       await signInWithEmailAndPassword(auth, email, password);
-      navigation.replace("Home");
+      if (Platform.OS === "android") {
+        (navigation as any).reset({
+          index: 0,
+          routes: [{ name: "Drawer" }],
+        });
+      } else {
+        navigation.replace("Home");
+      }
     } catch (err: any) {
       setError(err.message || "Login failed");
     } finally {
       setLoading(false);
     }
   };
-
   return (
     <>
       {Platform.OS === "web" ? (
@@ -59,7 +65,7 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
             </View>
 
             <View style={styles.rightSection}>
-              <Text style={styles.title}>Login Web</Text>
+              <Text style={styles.title}>Login</Text>
               <TextInput
                 style={styles.input}
                 placeholder="Email"
@@ -105,8 +111,8 @@ export default function LoginScreen({ navigation }: LoginScreenProps) {
           colors={["#8C0101", "#20007B"]}
           style={styles.container}
         >
-          <View style={styles.loginBox}>
-            <Text style={styles.title}>Login Mobile</Text>
+          <View style={styles.loginBoxMobile}>
+            <Text style={styles.title}>Login</Text>
             <TextInput
               style={styles.inputMobile}
               placeholder="Email"

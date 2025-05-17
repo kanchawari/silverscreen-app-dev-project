@@ -9,6 +9,7 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
+  Platform,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -17,6 +18,7 @@ import NavBar from "../components/NavBar";
 import { Movie, Genre, TMDB_API_KEY } from "../types/movie";
 import nsfwKeywords from "../nsfwKeywords";
 import { auth } from "../firebaseConfig";
+import { DrawerActions } from "@react-navigation/native";
 
 type HomeScreenProps = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -25,18 +27,25 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
   const [searchQuery, setSearchQuery] = useState("");
   const [movies, setMovies] = useState<Movie[]>([]);
   const [loading, setLoading] = useState(false);
-  const [numColumns, setNumColumns] = useState(5);
+  const [numColumns, setNumColumns] = useState(
+    Platform.OS === "android" ? 2 : 5
+  );
 
   useEffect(() => {
     const searchMovies = async () => {
-      if (!searchQuery.trim()) {
-        // If search is empty, fetch popular movies from multiple pages
-        setLoading(true);
-        try {
-          const totalPages = 8; // Set the number of pages to fetch
+      const query = searchQuery.toLowerCase().trim();
+      const isYear = /^\d{4}$/.test(query);
+      const matchedGenre = genres.find(
+        (genre) => genre.name.toLowerCase() === query
+      );
+
+      setLoading(true);
+
+      try {
+        if (!query) {
+          const totalPages = 12;
           let allMovies: Movie[] = [];
 
-          // Loop through pages and fetch results
           for (let page = 1; page <= totalPages; page++) {
             const res = await axios.get(
               `https://api.themoviedb.org/3/movie/popular?api_key=${TMDB_API_KEY}&language=en-US&page=${page}`
@@ -49,101 +58,82 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
               index === self.findIndex((m) => m.id === movie.id)
           );
           setMovies(uniqueMovies);
-        } catch (err) {
-          console.error("Error fetching popular movies:", err);
-          setMovies([]);
-        }
-        setLoading(false);
-        return;
-      }
+        } else if (isYear || matchedGenre) {
+          const pageCount = 6;
+          let filteredMovies: Movie[] = [];
+          let titleSearchMovies: Movie[] = [];
 
-      // If search is not empty
+          // Fetch discover by year or genre
+          for (let page = 1; page <= pageCount; page++) {
+            const url = isYear
+              ? `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&language=en-US&primary_release_year=${query}&page=${page}&include_adult=false`
+              : `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&language=en-US&with_genres=${matchedGenre?.id}&page=${page}&include_adult=false`;
 
-      const query = searchQuery.toLowerCase().trim();
+            const res = await axios.get(url);
+            filteredMovies = [...filteredMovies, ...res.data.results];
+          }
 
-      setLoading(true);
-      try {
-        // For very short queries (2-3 characters), fetch more results
-        const pageCount = query.length <= 3 ? 6 : 4;
-        let allResults: Movie[] = [];
+          // Fetch title search results
+          for (let page = 1; page <= pageCount; page++) {
+            const res = await axios.get(
+              `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=en-US&query=${encodeURIComponent(
+                query
+              )}&page=${page}&include_adult=false`
+            );
+            titleSearchMovies = [...titleSearchMovies, ...res.data.results];
+          }
 
-        // Fetch multiple pages for short queries
-        for (let page = 1; page <= pageCount; page++) {
-          const res = await axios.get(
-            `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=en-US&query=${encodeURIComponent(
-              query
-            )}&page=${page}&include_adult=false`
+          // Combine both results and dedupe by id
+          const combined = [...filteredMovies, ...titleSearchMovies];
+          const uniqueCombined = combined.filter(
+            (movie, index, self) =>
+              index === self.findIndex((m) => m.id === movie.id)
           );
-          allResults = [...allResults, ...res.data.results];
-        }
 
-        // Remove duplicates
-        const uniqueResults = allResults.filter(
-          (movie, index, self) =>
-            index === self.findIndex((m) => m.id === movie.id)
-        );
-
-        // Score and rank the results
-        let searchResults = uniqueResults
-          .map((movie) => {
-            let score = 0;
+          // Filter out movies with no poster/overview and NSFW content
+          const finalResults = uniqueCombined.filter((movie) => {
             const title = movie.title.toLowerCase();
-            const overview = movie.overview.toLowerCase();
-
-            // Title match score with improved partial matching
-            if (title.includes(query)) {
-              // Higher score for matches at the start of the title
-              if (title.startsWith(query)) {
-                score += 5;
-              } else {
-                score += 3;
-              }
-
-              // Bonus for exact match
-              if (title === query) {
-                score += 2;
-              }
-
-              // Bonus for word boundary matches
-              if (title.includes(` ${query}`) || title.includes(`${query} `)) {
-                score += 1;
-              }
-            }
-
-            // Genre match score
-            const movieGenres = genres.filter((genre) =>
-              movie.genre_ids.includes(genre.id)
-            );
-            const genreMatches = movieGenres.filter((genre) =>
-              genre.name.toLowerCase().includes(query)
-            );
-            score += genreMatches.length;
-
-            // Year match score
-            if (movie.release_date.includes(query)) {
-              score += 2;
-            }
-
-            const popularityScore = Math.min(3, movie.popularity / 100); // adjust divisor if needed
-            score += popularityScore;
-
-            // Explicit content filtering
+            const overview = movie.overview?.toLowerCase() || "";
             const isNSFW = nsfwKeywords.some(
               (word) => title.includes(word) || overview.includes(word)
             );
-            if (isNSFW) {
-              score = 0;
-            }
+            return !isNSFW && movie.poster_path && movie.overview?.trim();
+          });
 
-            return { ...movie, score };
-          })
-          .filter(
-            (movie) =>
-              movie.score > 0 && movie.poster_path && movie.overview?.trim()
-          ) // Only keep movies with at least one match
-          .sort((a, b) => b.popularity - a.popularity);
+          setMovies(finalResults.sort((a, b) => b.popularity - a.popularity));
+        } else {
+          // Normal text search on titles
+          const pageCount = query.length <= 3 ? 8 : 6;
+          let allResults: Movie[] = [];
 
-        setMovies(searchResults);
+          for (let page = 1; page <= pageCount; page++) {
+            const res = await axios.get(
+              `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=en-US&query=${encodeURIComponent(
+                query
+              )}&page=${page}&include_adult=false`
+            );
+            allResults = [...allResults, ...res.data.results];
+          }
+
+          const uniqueResults = allResults.filter(
+            (movie, index, self) =>
+              index === self.findIndex((m) => m.id === movie.id)
+          );
+
+          // Filter out NSFW and missing poster/overview
+          const filteredResults = uniqueResults.filter((movie) => {
+            const title = movie.title.toLowerCase();
+            const overview = movie.overview?.toLowerCase() || "";
+            const isNSFW = nsfwKeywords.some(
+              (word) => title.includes(word) || overview.includes(word)
+            );
+            return !isNSFW && movie.poster_path && movie.overview?.trim();
+          });
+
+          setMovies(
+            filteredResults.sort((a, b) => b.popularity - a.popularity)
+          );
+        }
       } catch (err) {
         console.error("Error searching movies:", err);
         setMovies([]);
@@ -157,6 +147,10 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
 
   // Dynamic number of columns
   useEffect(() => {
+    if (Platform.OS === "android") {
+      setNumColumns(2);
+      return;
+    }
     const updateNumColumns = () => {
       const screenWidth = Dimensions.get("window").width;
       const itemWidth = 300; // adjust based on your item size
@@ -176,34 +170,80 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
     };
   }, []);
 
+  // Responsive poster size for Android
+  const posterMargin = 28;
+  const posterWidth =
+    Platform.OS === "android"
+      ? (Dimensions.get("window").width - posterMargin * 3) / 2
+      : 240;
+  const posterHeight = Platform.OS === "android" ? posterWidth * 1.5 : 360;
+
   const renderItem = ({ item }: { item: Movie }) => (
     <TouchableOpacity
-      style={styles.posterContainer}
+      style={
+        Platform.OS === "android"
+          ? [
+              styles.posterContainerAndroid,
+              {
+                marginHorizontal: posterMargin / 2,
+                marginBottom: posterMargin,
+              },
+            ]
+          : styles.posterContainer
+      }
       onPress={() =>
         navigation.navigate("MovieDetails", { movie: item, genres })
       }
     >
       <Image
         source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
-        style={styles.poster}
+        style={
+          Platform.OS === "android"
+            ? [
+                {
+                  width: posterWidth,
+                  height: posterHeight,
+                  borderRadius: 0,
+                  backgroundColor: "#ccc",
+                },
+              ]
+            : styles.poster
+        }
         resizeMode="cover"
       />
-      {/*<Text style={styles.popularityText}>Popularity: {item.popularity}</Text>*/}
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <NavBar />
-      <View style={styles.searchContainer}>
+      {Platform.OS === "web" && <NavBar />}
+      {Platform.OS === "android" && (
+        <NavBar
+          showMenu
+          onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        />
+      )}
+      <View
+        style={
+          Platform.OS === "android"
+            ? styles.searchContainerAndroid
+            : styles.searchContainer
+        }
+      >
         <TextInput
-          style={styles.searchInput}
-          placeholder="Search movies..."
+          style={
+            Platform.OS === "android"
+              ? styles.searchInputAndroid
+              : styles.searchInput
+          }
+          placeholder="Search Here"
           placeholderTextColor="#888"
           value={searchQuery}
           onChangeText={setSearchQuery}
         />
-        <Text style={styles.searchHint}>Search by title, genre, or year</Text>
+        {Platform.OS !== "android" && (
+          <Text style={styles.searchHint}>Search by title, genre, or year</Text>
+        )}
       </View>
       {searchQuery.trim() ? (
         <View style={styles.resultsContainer}>
@@ -221,13 +261,17 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
         </View>
       ) : (
         <FlatList
-          key={numColumns} // This forces a re-render when numColumns changes
+          key={numColumns}
           data={movies}
           keyExtractor={(item) => item.id.toString()}
           numColumns={numColumns}
           renderItem={renderItem}
-          contentContainerStyle={styles.grid}
-          style={styles.flatList}
+          contentContainerStyle={
+            Platform.OS === "android"
+              ? { paddingHorizontal: posterMargin / 2, paddingBottom: 32 }
+              : styles.grid
+          }
+          style={Platform.OS === "android" ? { flex: 1 } : styles.flatList}
           showsVerticalScrollIndicator={false}
         />
       )}
@@ -306,6 +350,27 @@ const styles = StyleSheet.create({
     color: "#ffffff", // Choose a color that contrasts well with your background
     position: "absolute", // Position it over or under the poster
     bottom: 10, // Adjust this based on where you want it
-    left: 10, // Adjust this based on where you want it
+    left: 10, // Adjust this
+  },
+  posterContainerAndroid: {
+    flex: 1,
+    alignItems: "center",
+  },
+  searchContainerAndroid: {
+    marginTop: 24,
+    marginBottom: 16,
+    marginHorizontal: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  searchInputAndroid: {
+    backgroundColor: "#444",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 16,
+    marginBottom: 0,
+    width: Dimensions.get("window").width - 48,
+    fontSize: 16,
+    textAlign: "center",
   },
 });

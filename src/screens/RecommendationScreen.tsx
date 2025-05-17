@@ -6,12 +6,14 @@ import {
   StyleSheet,
   ScrollView,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import axios from "axios";
 import { Genre, Movie, TMDB_API_KEY } from "../types/movie";
 import NavBar from "../components/NavBar";
+import { DrawerActions } from "@react-navigation/native";
 
 // Define navigation type
 type RootStackParamList = {
@@ -68,7 +70,13 @@ export default function RecommendationScreen() {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#151518" }}>
-      <NavBar />
+      {Platform.OS === "web" && <NavBar />}
+      {Platform.OS === "android" && (
+        <NavBar
+          showMenu
+          onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        />
+      )}
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.title}>What are we feeling today?</Text>
         {error ? <Text style={styles.error}>{error}</Text> : null}
@@ -119,33 +127,33 @@ const styles = StyleSheet.create({
   },
   title: {
     color: "#fff",
-    fontSize: 34,
+    fontSize: Platform.OS === "android" ? 28 : 34,
     fontWeight: "bold",
     textAlign: "center",
     marginBottom: 30,
-    marginTop: 48,
+    marginTop: Platform.OS === "android" ? 12 : 48,
   },
   error: {
     color: "#ff6b6b",
     marginBottom: 12,
-    fontSize: 16,
+    fontSize: Platform.OS === "android" ? 14 : 16,
   },
   cloudsContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
-    marginBottom: 32,
-    gap: 18,
+    marginBottom: Platform.OS === "android" ? 16 : 32,
+    gap: Platform.OS === "android" ? 6 : 18,
   },
   cloud: {
     backgroundColor: "transparent",
     borderColor: "#d3d3d3",
     borderWidth: 3,
     borderRadius: 40,
-    paddingHorizontal: 32,
-    paddingVertical: 16,
+    paddingHorizontal: Platform.OS === "android" ? 24 : 32,
+    paddingVertical: Platform.OS === "android" ? 12 : 16,
     margin: 8,
-    minWidth: 120,
+    minWidth: Platform.OS === "android" ? 100 : 120,
     alignItems: "center",
     justifyContent: "center",
   },
@@ -155,27 +163,27 @@ const styles = StyleSheet.create({
   },
   cloudText: {
     color: "#fff",
-    fontSize: 24,
+    fontSize: Platform.OS === "android" ? 16 : 24,
     fontWeight: "500",
   },
   cloudTextSelected: {
     color: "#151518",
-    fontSize: 24,
+    fontSize: Platform.OS === "android" ? 16 : 24,
     fontWeight: "500",
   },
   randomBtn: {
     backgroundColor: "#a11a1a",
     borderRadius: 30,
-    paddingVertical: 16,
-    width: 320,
-    height: 70,
+    paddingVertical: Platform.OS === "android" ? 12 : 16,
+    width: Platform.OS === "android" ? 280 : 320,
+    height: Platform.OS === "android" ? 60 : 70,
     alignItems: "center",
     justifyContent: "center",
     marginTop: 8,
   },
   randomText: {
     color: "#fff",
-    fontSize: 24,
+    fontSize: Platform.OS === "android" ? 20 : 24,
     fontWeight: "500",
   },
 });

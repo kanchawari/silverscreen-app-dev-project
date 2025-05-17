@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StyleSheet,
+  Image,
+  TouchableOpacity,
+  Platform,
+} from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { useNavigation, StackActions } from "@react-navigation/native";
 import type { NavigationProp } from "@react-navigation/native";
@@ -14,16 +21,26 @@ export type RootStackParamList = {
   WatchHistory: undefined;
 };
 
-type NavBarProps = {}; // Add actual prop types if needed
-export default function NavBar(props: NavBarProps) {
+type NavBarProps = {
+  showMenu?: boolean;
+  onMenuPress?: () => void;
+};
+
+export default function NavBar({ showMenu = false, onMenuPress }: NavBarProps) {
   const navigation = useNavigation<NavigationProp<any>>();
   const [modalVisible, setModalVisible] = useState(false);
 
   const handleSignOut = async () => {
     await signOut(auth);
     setModalVisible(false);
-    // Optionally, trigger navigation to Login if needed
-    navigation.dispatch(StackActions.replace("Login"));
+    if (Platform.OS === "android") {
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "Login" }],
+      });
+    } else {
+      navigation.dispatch(StackActions.replace("Login"));
+    }
   };
 
   return (
@@ -34,41 +51,64 @@ export default function NavBar(props: NavBarProps) {
       style={styles.gradient}
     >
       <View style={styles.container}>
-        <TouchableOpacity
-          onPress={() => navigation.navigate("Home")}
-          style={styles.logoContainer} // Add this
-        >
-          <Image
-            source={require("../../assets/silverscreen-logo.png")}
-            style={styles.logo}
-            resizeMode="contain"
-          />
-          <Text style={styles.logoText}>SILVERSCREEN</Text>
-        </TouchableOpacity>
-
-        <View style={styles.linksWrapper}>
-          <TouchableOpacity onPress={() => navigation.navigate("Watchlist")}>
-            <Text style={styles.link}>Watchlist</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("WatchHistory")}>
-            <Text style={styles.link}>Watch History</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={() => navigation.navigate("Recommendation")}
-          >
-            <Text style={styles.link}>Recommendation</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={styles.userIconBtn}
-            onPress={() => setModalVisible(true)}
-          >
+        {/* Hamburger menu for Android */}
+        {showMenu && Platform.OS === "android" ? (
+          <TouchableOpacity onPress={onMenuPress} style={styles.menuBtn}>
             <Image
-              source={require("../../assets/user-icon-white.png")}
-              style={{ width: 40, height: 40 }}
+              source={require("../../assets/hamburger-menu.png")}
+              style={styles.menuIcon}
               resizeMode="contain"
             />
           </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.menuBtn} />
+        )}
+
+        {/* Logo and title only for web */}
+        {Platform.OS === "web" && (
+          <TouchableOpacity
+            onPress={() => navigation.navigate("Home")}
+            style={styles.logoContainer}
+          >
+            <Image
+              source={require("../../assets/silverscreen-logo.png")}
+              style={styles.logo}
+              resizeMode="contain"
+            />
+            <Text style={styles.logoText}>SILVERSCREEN</Text>
+          </TouchableOpacity>
+        )}
+
+        {/* Navigation links for web only */}
+        {Platform.OS === "web" && (
+          <View style={styles.linksWrapper}>
+            <TouchableOpacity onPress={() => navigation.navigate("Watchlist")}>
+              <Text style={styles.link}>Watchlist</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("WatchHistory")}
+            >
+              <Text style={styles.link}>Watch History</Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.navigate("Recommendation")}
+            >
+              <Text style={styles.link}>Recommendation</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+
+        {/* User profile icon */}
+        <TouchableOpacity
+          style={styles.userIconBtn}
+          onPress={() => setModalVisible(true)}
+        >
+          <Image
+            source={require("../../assets/user-icon-white.png")}
+            style={{ width: 40, height: 40 }}
+            resizeMode="contain"
+          />
+        </TouchableOpacity>
       </View>
       <UserProfileModal
         visible={modalVisible}
@@ -93,6 +133,7 @@ const styles = StyleSheet.create({
   logoContainer: {
     flexDirection: "row",
     alignItems: "center",
+    marginLeft: -54,
   },
   logo: {
     width: 54,
@@ -124,5 +165,16 @@ const styles = StyleSheet.create({
   userIcon: {
     fontSize: 32,
     color: "#fff",
+  },
+  menuBtn: {
+    width: 54,
+    height: 54,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  menuIcon: {
+    width: 32,
+    height: 32,
+    tintColor: "#fff",
   },
 });

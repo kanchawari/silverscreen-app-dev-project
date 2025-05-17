@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from "react-native";
 import { signOut } from "firebase/auth";
 import { auth, db } from "../firebaseConfig";
@@ -89,10 +90,10 @@ const styles = StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.3)",
-    justifyContent: "flex-start", // align from top
-    alignItems: "flex-end", // align to the right
-    paddingTop: 17, // spacing from top
-    paddingRight: 20, // spacing from right
+    justifyContent: "flex-start",
+    alignItems: "flex-end",
+    paddingTop: Platform.OS === "android" ? 0 : 17,
+    paddingRight: 17,
   },
   modal: {
     width: 240,
