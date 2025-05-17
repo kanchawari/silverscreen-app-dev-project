@@ -100,7 +100,7 @@ const styles = StyleSheet.create({
     alignSelf: "center",
   },
   myReviewBubble: {
-    backgroundColor: "#3f425f",
+    backgroundColor: "#5F5F5F",
     borderRadius: 10,
     padding: 12,
     marginBottom: 16,
