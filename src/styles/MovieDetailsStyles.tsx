@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
   },
 
   writeReviewBtn: {
-    backgroundColor: "#888",
+    backgroundColor: "#5F5F5F",
     borderRadius: 4,
     paddingHorizontal: 60,
     paddingVertical: 10,
