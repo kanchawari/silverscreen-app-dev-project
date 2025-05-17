@@ -1,0 +1,97 @@
+import { StyleSheet } from "react-native";
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    padding: 24,
+    backgroundColor: "#151518",
+  },
+  loginBox: {
+    flexDirection: "row",
+    backgroundColor: "#212121",
+    borderRadius: 16,
+    padding: 24,
+    width: "70%",
+    height: "70%",
+    shadowColor: "#000",
+    shadowOpacity: 0.3,
+    shadowOffset: { width: 0, height: 4 },
+    shadowRadius: 8,
+    elevation: 6, // for Android
+  },
+  leftSection: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingRight: 20,
+    borderRightWidth: 1,
+    borderRightColor: "#444",
+  },
+  logo: {
+    width: "80%",
+    height: "80%",
+    marginBottom: 16,
+  },
+  rightSection: {
+    flex: 1,
+    paddingLeft: 20,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  title: {
+    color: "#fff",
+    fontSize: 32,
+    fontWeight: "bold",
+    marginBottom: 32,
+  },
+  input: {
+    width: "90%",
+    backgroundColor: "#333",
+    color: "#fff",
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+  },
+  button: {
+    backgroundColor: "#a11a1a",
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 0,
+    marginTop: 8,
+    height: "11%",
+    width: "30%",
+    alignItems: "center",
+  },
+  buttonMobile: {
+    backgroundColor: "#a11a1a",
+    borderRadius: 8,
+    paddingVertical: 14,
+    paddingHorizontal: 0,
+    marginTop: 8,
+    height: "6%",
+    width: "32%",
+    alignItems: "center",
+  },
+  buttonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 18,
+  },
+  error: {
+    color: "#ff6b6b",
+    marginBottom: 8,
+    textAlign: "center",
+  },
+  linkBtn: {
+    marginTop: 16,
+  },
+  linkText: {
+    color: "#fff",
+    textDecorationLine: "underline",
+    fontSize: 16,
+  },
+});
+
+export default styles;
