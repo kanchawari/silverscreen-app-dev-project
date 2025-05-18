@@ -327,27 +327,12 @@ export default function MovieDetailsScreen({
     const posterHeight = posterWidth * 1.5;
     return (
       <View style={{ flex: 1, backgroundColor: "#151518" }}>
-        <NavBar showMenu onMenuPress={() => navigation.goBack()} />
+        <NavBar
+          showMenu
+          showBack
+          onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        />
         <Toast />
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            marginTop: 8,
-            marginLeft: 8,
-          }}
-        >
-          <TouchableOpacity
-            onPress={() => navigation.goBack()}
-            style={{ paddingHorizontal: 8, paddingVertical: 8, marginLeft: 12 }}
-          >
-            <Image
-              source={require("../../assets/back-button.png")}
-              style={{ width: 32, height: 32 }}
-              resizeMode="contain"
-            />
-          </TouchableOpacity>
-        </View>
         <ScrollView showsVerticalScrollIndicator={false}>
           <View style={{ alignItems: "center", marginTop: 16 }}>
             <Image
@@ -631,23 +616,14 @@ export default function MovieDetailsScreen({
   }
 
   return (
-    <View style={styles.detailsRoot}>
-      <NavBar />
-      <Toast />
-      <TouchableOpacity
-        onPress={() => navigation.goBack()}
-        style={styles.backButton}
-      >
-        <Image
-          source={require("../../assets/back-button.png")}
-          style={{ width: 32, height: 32 }}
-          resizeMode="contain"
+    <View style={styles.container}>
+      {Platform.OS === "android" && (
+        <NavBar
+          showMenu
+          onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
         />
-      </TouchableOpacity>
-      <ScrollView
-        style={styles.detailsRoot}
-        showsVerticalScrollIndicator={false}
-      >
+      )}
+      <ScrollView style={styles.scrollView}>
         <View style={styles.detailsRow}>
           <Image
             source={{
