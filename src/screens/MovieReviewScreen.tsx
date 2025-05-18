@@ -7,10 +7,11 @@ import {
   ScrollView,
   Image,
   TouchableOpacity,
+  Platform,
+  Dimensions,
 } from "react-native";
 import StarRating from "react-native-star-rating-widget";
 import Toast from "react-native-toast-message";
-import { formatDistanceToNow } from "date-fns";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import axios from "axios";
@@ -27,6 +28,7 @@ import {
   collection,
 } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
+import { DrawerActions } from "@react-navigation/native";
 
 type MovieReviewScreenProps = NativeStackScreenProps<
   RootStackParamList,
@@ -45,7 +47,7 @@ export default function MovieReviewScreen({
   const [loading, setLoading] = useState(false);
 
   const submitReview = async () => {
-    if (loading) return; // Prevent duplicate submissions
+    if (loading) return;
     setLoading(true);
     try {
       const userId = auth.currentUser?.uid;
@@ -97,7 +99,7 @@ export default function MovieReviewScreen({
 
       Toast.show({
         type: "success",
-        text1: "Review submitted successfully!",
+        text1: "Review submitted!",
         position: "top",
         visibilityTime: 2000,
       });
@@ -109,6 +111,8 @@ export default function MovieReviewScreen({
         type: "error",
         text1: "Error submitting review",
         text2: "Please try again.",
+        position: "top",
+        visibilityTime: 3000,
       });
       console.error("Error submitting review:", error);
       alert("There was an error submitting your review. Please try again.");
@@ -116,6 +120,117 @@ export default function MovieReviewScreen({
       setLoading(false);
     }
   };
+
+  if (Platform.OS === "android") {
+    const screenWidth = Dimensions.get("window").width;
+    const posterWidth = screenWidth - 100;
+    const posterHeight = posterWidth * 1.5;
+    return (
+      <View style={styles.detailsRoot}>
+        <NavBar showMenu onMenuPress={() => navigation.goBack()} />
+        <Toast />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: 8,
+            marginLeft: 8,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{ paddingHorizontal: 8, paddingVertical: 8, marginLeft: 12 }}
+          >
+            <Image
+              source={require("../../assets/back-button.png")}
+              style={{ width: 32, height: 32 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+        <ScrollView
+          style={styles.detailsRoot}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={{ alignItems: "center", marginTop: 16 }}>
+            <Image
+              source={{
+                uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+              }}
+              style={{
+                width: posterWidth,
+                height: posterHeight,
+                borderRadius: 0,
+                marginBottom: 16,
+              }}
+            />
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: 24,
+                textAlign: "center",
+                marginBottom: 16,
+              }}
+            >
+              {movie.title} ({movie.release_date?.slice(0, 4)})
+            </Text>
+
+            <StarRating
+              style={{ marginBottom: 24 }}
+              rating={stars}
+              starSize={60}
+              onChange={setStars}
+              animationConfig={{
+                scale: 1,
+                easing: () => 0,
+                duration: 0,
+              }}
+            />
+            <TextInput
+              style={{
+                backgroundColor: "#1e1e1e",
+                color: "#fff",
+                borderColor: "#444",
+                borderWidth: 1,
+                borderRadius: 8,
+                padding: 12,
+                fontSize: 18,
+                textAlignVertical: "top",
+                width: posterWidth,
+                minHeight: 120,
+                marginBottom: 24,
+              }}
+              placeholder="Write your review..."
+              placeholderTextColor="#aaa"
+              multiline
+              numberOfLines={6}
+              value={reviewText}
+              onChangeText={setReviewText}
+            />
+            <TouchableOpacity
+              style={{
+                backgroundColor: loading ? "#555" : "#a11a1a",
+                borderRadius: 8,
+                alignSelf: "center",
+                paddingHorizontal: 24,
+                paddingVertical: 12,
+                marginBottom: 32,
+                width: 240,
+                alignItems: "center",
+              }}
+              onPress={submitReview}
+              disabled={loading}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 22 }}>
+                {loading ? "Submitting..." : "Submit Review"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.detailsRoot}>
@@ -190,8 +305,6 @@ const styles = StyleSheet.create({
   detailsRoot: {
     flex: 1,
     backgroundColor: "#151518",
-    /*padding: 16,
-    paddingTop: 32,*/
   },
   detailsRow: {
     flexDirection: "row",
@@ -202,7 +315,6 @@ const styles = StyleSheet.create({
   detailsPoster: {
     width: 360,
     height: 540,
-    /*borderRadius: 8,*/
     marginRight: 24,
   },
   detailsCol: {
@@ -237,7 +349,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginLeft: 40,
     fontSize: 18,
-    textAlignVertical: "top", // Aligns text at the top for multiline
+    textAlignVertical: "top",
   },
 
   submitReviewBtn: {

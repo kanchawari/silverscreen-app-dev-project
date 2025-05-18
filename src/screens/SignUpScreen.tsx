@@ -3,14 +3,18 @@ import {
   View,
   Text,
   TextInput,
+  Image,
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
+  Platform,
 } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { collection, addDoc, setDoc, doc } from "firebase/firestore";
 import { auth, db } from "../firebaseConfig";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import styles from "../styles/SignUpStyles";
 
 type RootStackParamList = {
   Login: undefined;
@@ -50,100 +54,126 @@ export default function SignUpScreen({ navigation }: SignUpScreenProps) {
   };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Sign Up</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Username"
-        placeholderTextColor="#888"
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#888"
-        value={email}
-        onChangeText={setEmail}
-        autoCapitalize="none"
-        keyboardType="email-address"
-      />
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#888"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-      {error ? <Text style={styles.error}>{error}</Text> : null}
-      <TouchableOpacity
-        style={styles.button}
-        onPress={handleSignUp}
-        disabled={loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>Sign Up</Text>
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => navigation.replace("Login")}
-        style={styles.linkBtn}
-      >
-        <Text style={styles.linkText}>Already have an account? Login</Text>
-      </TouchableOpacity>
-    </View>
+    <>
+      {Platform.OS === "web" ? (
+        <LinearGradient
+          colors={["#8C0101", "#20007B"]}
+          style={styles.container}
+        >
+          <View style={styles.loginBox}>
+            <View style={styles.leftSection}>
+              <Image
+                source={require("../../assets/silverscreen-logo.png")}
+                style={styles.logo}
+                resizeMode="contain"
+              />
+            </View>
+
+            <View style={styles.rightSection}>
+              <Text style={styles.title}>Sign Up</Text>
+              <TextInput
+                style={styles.input}
+                placeholder="Username"
+                placeholderTextColor="#888"
+                value={username}
+                onChangeText={setUsername}
+                autoCapitalize="none"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Email"
+                placeholderTextColor="#888"
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                keyboardType="email-address"
+              />
+              <TextInput
+                style={styles.input}
+                placeholder="Password"
+                placeholderTextColor="#888"
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+              {error ? <Text style={styles.error}>{error}</Text> : null}
+              <TouchableOpacity
+                style={styles.button}
+                onPress={handleSignUp}
+                disabled={loading}
+              >
+                {loading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.buttonText}>Sign Up</Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => navigation.replace("Login")}
+                style={styles.linkBtn}
+              >
+                <Text style={styles.linkText}>
+                  Already have an account? Login
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </LinearGradient>
+      ) : (
+        <LinearGradient
+          colors={["#8C0101", "#20007B"]}
+          style={styles.container}
+        >
+          <View style={styles.loginBoxMobile}>
+            <Text style={styles.title}>Sign Up</Text>
+            <TextInput
+              style={styles.inputMobile}
+              placeholder="Username"
+              placeholderTextColor="#888"
+              value={username}
+              onChangeText={setUsername}
+              autoCapitalize="none"
+            />
+            <TextInput
+              style={styles.inputMobile}
+              placeholder="Email"
+              placeholderTextColor="#888"
+              value={email}
+              onChangeText={setEmail}
+              autoCapitalize="none"
+              keyboardType="email-address"
+            />
+            <TextInput
+              style={styles.inputMobile}
+              placeholder="Password"
+              placeholderTextColor="#888"
+              value={password}
+              onChangeText={setPassword}
+              secureTextEntry
+            />
+            {error ? <Text style={styles.error}>{error}</Text> : null}
+            <TouchableOpacity
+              style={styles.buttonMobile}
+              onPress={handleSignUp}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.buttonText}>Sign Up</Text>
+              )}
+            </TouchableOpacity>
+            <TouchableOpacity
+              onPress={() => navigation.replace("Login")}
+              style={styles.linkBtn}
+            >
+              <Text style={styles.linkText}>
+                Already have an account? Login
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </LinearGradient>
+      )}
+    </>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#151518",
-    justifyContent: "center",
-    alignItems: "center",
-    padding: 24,
-  },
-  title: {
-    color: "#fff",
-    fontSize: 32,
-    fontWeight: "bold",
-    marginBottom: 32,
-  },
-  input: {
-    width: "100%",
-    backgroundColor: "#333",
-    color: "#fff",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: "#a11a1a",
-    borderRadius: 8,
-    paddingVertical: 14,
-    paddingHorizontal: 48,
-    marginTop: 8,
-  },
-  buttonText: {
-    color: "#fff",
-    fontWeight: "bold",
-    fontSize: 18,
-  },
-  error: {
-    color: "#ff6b6b",
-    marginBottom: 8,
-    textAlign: "center",
-  },
-  linkBtn: {
-    marginTop: 16,
-  },
-  linkText: {
-    color: "#fff",
-    textDecorationLine: "underline",
-    fontSize: 16,
-  },
-});

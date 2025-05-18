@@ -7,8 +7,10 @@ import {
   Image,
   TouchableOpacity,
   ActivityIndicator,
+  Platform,
+  Dimensions,
 } from "react-native";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, DrawerActions } from "@react-navigation/native";
 import { useCallback } from "react";
 import StarRating from "react-native-star-rating-widget";
 import Toast from "react-native-toast-message";
@@ -96,19 +98,16 @@ export default function MovieDetailsScreen({
         fetchedReviews.push({ id: doc.id, ...doc.data() });
       });
 
-      // Sort reviews: user's reviews first, then by most recent timestamp
       const sortedReviews = fetchedReviews.sort((a, b) => {
         const currentUser = auth.currentUser?.uid;
 
         const aIsUser = a.userId === currentUser ? 0 : 1;
         const bIsUser = b.userId === currentUser ? 0 : 1;
 
-        // Sort by: user's reviews (0) before others (1)
         if (aIsUser !== bIsUser) {
           return aIsUser - bIsUser;
         }
 
-        // Then sort by timestamp (most recent first)
         const aTime = a.timestamp?.toDate?.() || new Date(0);
         const bTime = b.timestamp?.toDate?.() || new Date(0);
         return bTime.getTime() - aTime.getTime();
@@ -137,13 +136,11 @@ export default function MovieDetailsScreen({
     if (!userId) return;
 
     try {
-      setDeletingReviewId(reviewId); // Start loading
+      setDeletingReviewId(reviewId);
 
-      // Delete review from movie subcollection
       const reviewRef = doc(db, "movies", String(movieId), "reviews", reviewId);
       await deleteDoc(reviewRef);
 
-      // Remove review from user field
       const userRef = doc(db, "users", userId);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
@@ -160,14 +157,14 @@ export default function MovieDetailsScreen({
         await updateDoc(userRef, { reviews: updatedReviews });
       }
 
+      fetchReviews();
+
       Toast.show({
         type: "success",
         text1: "Review deleted",
         position: "top",
         visibilityTime: 2000,
       });
-
-      fetchReviews(); // Refresh reviews list
     } catch (error) {
       console.error("Error deleting review:", error);
       Toast.show({
@@ -175,7 +172,7 @@ export default function MovieDetailsScreen({
         text1: "Error deleting review",
       });
     } finally {
-      setDeletingReviewId(null); // Stop loading
+      setDeletingReviewId(null);
     }
   };
 
@@ -254,7 +251,6 @@ export default function MovieDetailsScreen({
         const apiKey = TMDB_API_KEY;
         const movieId = movie.id;
 
-        // Fetch movie details and credits in parallel
         const [detailsRes, creditsRes] = await Promise.all([
           axios.get(
             `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=en-US`
@@ -274,7 +270,6 @@ export default function MovieDetailsScreen({
           creditsData.cast?.slice(0, 5).map((member: any) => member.name) || [];
         setCast(topCast);
 
-        // Find the director from the crew
         const director = creditsData.crew?.find(
           (person: any) => person.job === "Director"
         );
@@ -316,12 +311,322 @@ export default function MovieDetailsScreen({
   };
 
   const formatReviewDate = (date: Date) => {
-    return formatDistanceToNow(date, { addSuffix: true }); // Adds "ago"
+    return formatDistanceToNow(date, { addSuffix: true });
   };
+
+  if (Platform.OS === "android") {
+    const screenWidth = Dimensions.get("window").width;
+    const posterWidth = screenWidth - 100;
+    const posterHeight = posterWidth * 1.5;
+    return (
+      <View style={{ flex: 1, backgroundColor: "#151518" }}>
+        <NavBar showMenu onMenuPress={() => navigation.goBack()} />
+        <Toast />
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            marginTop: 8,
+            marginLeft: 8,
+          }}
+        >
+          <TouchableOpacity
+            onPress={() => navigation.goBack()}
+            style={{ paddingHorizontal: 8, paddingVertical: 8, marginLeft: 12 }}
+          >
+            <Image
+              source={require("../../assets/back-button.png")}
+              style={{ width: 32, height: 32 }}
+              resizeMode="contain"
+            />
+          </TouchableOpacity>
+        </View>
+        <ScrollView showsVerticalScrollIndicator={false}>
+          <View style={{ alignItems: "center", marginTop: 16 }}>
+            <Image
+              source={{
+                uri: `https://image.tmdb.org/t/p/w500${movie.poster_path}`,
+              }}
+              style={{
+                width: posterWidth,
+                height: posterHeight,
+                borderRadius: 0,
+                marginBottom: 16,
+              }}
+              resizeMode="cover"
+            />
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: 24,
+                textAlign: "center",
+                marginBottom: 4,
+              }}
+            >
+              {movie.title}
+              <Text style={{ fontWeight: "normal" }}>
+                {" "}
+                ({movie.release_date?.slice(0, 4)})
+              </Text>
+            </Text>
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 16,
+                textAlign: "center",
+                marginBottom: 16,
+              }}
+            >
+              {getGenreNames(movie).join(" | ")}
+            </Text>
+            <View style={{ alignItems: "center" }}>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 15,
+                  alignSelf: "flex-start",
+
+                  marginBottom: 2,
+                }}
+              >
+                Duration:{" "}
+                {movieDetails?.runtime
+                  ? `${movieDetails.runtime} minutes`
+                  : "Loading..."}
+              </Text>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 15,
+                  alignSelf: "flex-start",
+
+                  marginBottom: 2,
+                }}
+              >
+                Release Date: {formatDate(movie.release_date)}
+              </Text>
+              <Text
+                style={{
+                  color: "#fff",
+                  fontSize: 15,
+                  alignSelf: "flex-start",
+
+                  marginBottom: 2,
+                }}
+              >
+                Director: {director || "Loading..."}
+              </Text>
+            </View>
+            <Text
+              style={{
+                color: "#fff",
+                fontWeight: "bold",
+                fontSize: 18,
+                marginTop: 10,
+                marginBottom: 2,
+                alignSelf: "flex-start",
+                marginLeft: 20,
+              }}
+            >
+              Overview
+            </Text>
+            <Text
+              style={{
+                color: "#fff",
+                fontSize: 15,
+                marginBottom: 16,
+                alignSelf: "flex-start",
+                marginLeft: 24,
+                marginRight: 24,
+              }}
+            >
+              {movie.overview}
+            </Text>
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "center",
+                gap: 12,
+                marginBottom: 16,
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  backgroundColor: isInWatchlist ? "#3F3F3F" : "#a11a1a",
+                  borderRadius: 0,
+                  paddingHorizontal: 12,
+                  paddingVertical: 12,
+                  width: 130,
+                  alignItems: "center",
+                  marginRight: 8,
+                }}
+                onPress={updateWatchlist}
+                disabled={watchlistLoading}
+              >
+                {watchlistLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text
+                    style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}
+                  >
+                    {isInWatchlist ? "- Watchlist" : "+ Watchlist"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  backgroundColor: isWatched ? "#3F3F3F" : "#a11a1a",
+                  borderRadius: 0,
+                  paddingHorizontal: 12,
+                  paddingVertical: 12,
+                  width: 200,
+                  alignItems: "center",
+                }}
+                onPress={updateWatchHistory}
+                disabled={watchedLoading}
+              >
+                {watchedLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text
+                    style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}
+                  >
+                    {isWatched ? "- Unmark as Watched" : "+ Mark as Watched"}
+                  </Text>
+                )}
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity
+              style={{
+                backgroundColor: "#5F5F5F",
+                borderRadius: 24,
+                paddingHorizontal: 40,
+                paddingVertical: 12,
+                alignSelf: "center",
+                marginTop: 0,
+                marginBottom: 8,
+              }}
+              onPress={() => navigation.navigate("MovieReview", { movie })}
+            >
+              <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 18 }}>
+                Write Review
+              </Text>
+            </TouchableOpacity>
+          </View>
+          <Text
+            style={{
+              color: "#ccc",
+              fontWeight: "400",
+              fontSize: 17,
+              textAlign: "center",
+              marginTop: 12,
+              marginBottom: 8,
+            }}
+          >
+            User Reviews
+          </Text>
+          {loadingReviews ? (
+            <ActivityIndicator color="#fff" />
+          ) : reviews.length === 0 ? (
+            <Text
+              style={{
+                textAlign: "center",
+                color: "white",
+                fontSize: 18,
+                fontWeight: "bold",
+                marginTop: 28,
+                marginBottom: 40,
+              }}
+            >
+              No reviews yet. Be the first to write one!
+            </Text>
+          ) : (
+            reviews.map((review) => (
+              <View
+                key={review.id}
+                style={{
+                  backgroundColor:
+                    review.userId === auth.currentUser?.uid
+                      ? "#5F5F5F"
+                      : "#3F3F3F",
+                  borderRadius: 24,
+                  padding: 16,
+                  marginBottom: 12,
+                  marginHorizontal: 16,
+                  alignSelf: "center",
+                  width: screenWidth - 32,
+                }}
+              >
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    marginBottom: 4,
+                  }}
+                >
+                  <Text
+                    style={{ color: "#fff", fontWeight: "bold", fontSize: 16 }}
+                  >
+                    {review.username}
+                  </Text>
+                  {auth.currentUser?.uid === review.userId && (
+                    <TouchableOpacity
+                      onPress={() =>
+                        deleteReview(review.id, movie.id, review.reviewText)
+                      }
+                      disabled={deletingReviewId === review.id}
+                    >
+                      {deletingReviewId === review.id ? (
+                        <ActivityIndicator size="small" color="white" />
+                      ) : (
+                        <Image
+                          source={require("../../assets/x-icon.png")}
+                          style={{ width: 20, height: 20 }}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  )}
+                </View>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    alignItems: "center",
+                    marginBottom: 4,
+                  }}
+                >
+                  <StarRating
+                    rating={review.rating}
+                    starSize={18}
+                    starStyle={{ marginHorizontal: 1 }}
+                    onChange={() => {}}
+                    enableSwiping={false}
+                    animationConfig={{
+                      scale: 1,
+                      easing: () => 0,
+                      duration: 0,
+                    }}
+                  />
+                  <Text style={{ color: "#aaa", fontSize: 14, marginLeft: 8 }}>
+                    {formatReviewDate(review.timestamp.toDate())}
+                  </Text>
+                </View>
+                <Text style={{ color: "#fff", fontSize: 15 }}>
+                  {review.reviewText}
+                </Text>
+              </View>
+            ))
+          )}
+        </ScrollView>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.detailsRoot}>
       <NavBar />
+      <Toast />
       <TouchableOpacity
         onPress={() => navigation.goBack()}
         style={styles.backButton}
@@ -485,21 +790,31 @@ export default function MovieDetailsScreen({
                 </View>
 
                 <View style={styles.reviewHeaderRow2}>
-                  <StarRating
-                    rating={item.rating}
-                    starSize={18}
-                    starStyle={{ marginHorizontal: 1 }}
-                    onChange={() => {}}
-                    enableSwiping={false}
-                    animationConfig={{
-                      scale: 1,
-                      easing: () => 0,
-                      duration: 0,
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      marginBottom: 4,
                     }}
-                  />
-                  <Text style={styles.reviewDate}>
-                    {formatReviewDate(item.timestamp.toDate())}
-                  </Text>
+                  >
+                    <StarRating
+                      rating={item.rating}
+                      starSize={18}
+                      starStyle={{ marginHorizontal: 1 }}
+                      onChange={() => {}}
+                      enableSwiping={false}
+                      animationConfig={{
+                        scale: 1,
+                        easing: () => 0,
+                        duration: 0,
+                      }}
+                    />
+                    <Text
+                      style={{ color: "#aaa", fontSize: 14, marginLeft: 8 }}
+                    >
+                      {formatReviewDate(item.timestamp.toDate())}
+                    </Text>
+                  </View>
                 </View>
 
                 <Text style={styles.reviewText}>{item.reviewText}</Text>

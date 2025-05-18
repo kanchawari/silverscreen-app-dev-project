@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
+import { Platform, View, ActivityIndicator } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { ActivityIndicator, View } from "react-native";
 import axios from "axios";
 
 import HomeScreen from "../screens/HomeScreen";
@@ -11,9 +11,12 @@ import WatchHistoryScreen from "../screens/WatchHistoryScreen";
 import LoginScreen from "../screens/LoginScreen";
 import SignUpScreen from "../screens/SignUpScreen";
 import RecommendationScreen from "../screens/RecommendationScreen";
+import NavBar from "../components/NavBar";
+import AppDrawer from "./Drawer";
 import { Genre, Movie, TMDB_API_KEY } from "../types/movie";
 
 export type RootStackParamList = {
+  Drawer: undefined;
   Login: undefined;
   SignUp: undefined;
   Home: { genres: Genre[] };
@@ -43,7 +46,6 @@ export default function AppNavigator() {
         setLoading(false);
       }
     };
-
     fetchGenres();
   }, []);
 
@@ -62,10 +64,27 @@ export default function AppNavigator() {
     );
   }
 
+  if (Platform.OS === "android") {
+    return (
+      <Stack.Navigator
+        screenOptions={{ headerShown: false }}
+        initialRouteName="Login"
+      >
+        <Stack.Screen name="Login" component={LoginScreen} />
+        <Stack.Screen name="SignUp" component={SignUpScreen} />
+        <Stack.Screen name="Drawer">
+          {() => <AppDrawer genres={genres} />}
+        </Stack.Screen>
+        <Stack.Screen name="MovieDetails" component={MovieDetailsScreen} />
+        <Stack.Screen name="MovieReview" component={MovieReviewScreen} />
+      </Stack.Navigator>
+    );
+  }
+
   return (
     <Stack.Navigator
       screenOptions={{ headerShown: false }}
-      initialRouteName="Home"
+      initialRouteName="Login"
     >
       <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />

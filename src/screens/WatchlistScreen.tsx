@@ -9,12 +9,13 @@ import {
   TextInput,
   ActivityIndicator,
   Dimensions,
+  Platform,
 } from "react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import axios from "axios";
 import NavBar from "../components/NavBar";
-import { useFocusEffect } from "@react-navigation/native";
+import { useFocusEffect, DrawerActions } from "@react-navigation/native";
 import { Movie, Genre, TMDB_API_KEY } from "../types/movie";
 import { auth, db } from "../firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
@@ -77,16 +78,19 @@ export default function WatchlistScreen({
     }, [])
   );
 
-  // Dynamic number of columns
   useEffect(() => {
     const updateNumColumns = () => {
+      if (Platform.OS === "android") {
+        setNumColumns(2);
+        return;
+      }
       const screenWidth = Dimensions.get("window").width;
-      const itemWidth = 300; // adjust based on your item size
+      const itemWidth = 300;
       const columns = Math.floor(screenWidth / itemWidth);
       setNumColumns(columns > 0 ? columns : 1);
     };
 
-    updateNumColumns(); // initial
+    updateNumColumns();
 
     const subscription = Dimensions.addEventListener(
       "change",
@@ -98,25 +102,58 @@ export default function WatchlistScreen({
     };
   }, []);
 
+  const posterMargin = 28;
+  const posterWidth =
+    Platform.OS === "android"
+      ? (Dimensions.get("window").width - posterMargin * 3) / 2
+      : 240;
+  const posterHeight = Platform.OS === "android" ? posterWidth * 1.5 : 360;
+
   const renderItem = ({ item }: { item: Movie }) => (
     <TouchableOpacity
-      style={styles.posterContainer}
+      style={
+        Platform.OS === "android"
+          ? [
+              styles.posterContainerAndroid,
+              {
+                marginHorizontal: posterMargin / 2,
+                marginBottom: posterMargin,
+              },
+            ]
+          : styles.posterContainer
+      }
       onPress={() =>
         navigation.navigate("MovieDetails", { movie: item, genres })
       }
     >
       <Image
         source={{ uri: `https://image.tmdb.org/t/p/w500${item.poster_path}` }}
-        style={styles.poster}
+        style={
+          Platform.OS === "android"
+            ? [
+                {
+                  width: posterWidth,
+                  height: posterHeight,
+                  borderRadius: 0,
+                  backgroundColor: "#ccc",
+                },
+              ]
+            : styles.poster
+        }
         resizeMode="cover"
       />
-      {/*<Text style={styles.popularityText}>Popularity: {item.popularity}</Text>*/}
     </TouchableOpacity>
   );
 
   return (
     <View style={styles.container}>
-      <NavBar />
+      {Platform.OS === "web" && <NavBar />}
+      {Platform.OS === "android" && (
+        <NavBar
+          showMenu
+          onMenuPress={() => navigation.dispatch(DrawerActions.openDrawer())}
+        />
+      )}
       <Text style={styles.title}>Watchlist</Text>
 
       {loading ? (
@@ -147,8 +184,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#151518",
-    /*padding: 16,
-    paddingTop: 32,*/
   },
   title: {
     fontSize: 24,
@@ -165,8 +200,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   posterContainer: {
-    /*flex: 1,*/
-    /*margin: 20,*/
     marginHorizontal: 20,
     marginBottom: 20,
     alignItems: "center",
@@ -174,7 +207,6 @@ const styles = StyleSheet.create({
   poster: {
     width: 240,
     height: 360,
-    /*borderRadius: 4,*/
     backgroundColor: "#ccc",
   },
   flatList: {
@@ -211,12 +243,9 @@ const styles = StyleSheet.create({
   },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyText: { color: "#fff", fontSize: 22, fontWeight: "bold" },
-  popularityText: {
-    // For debugging
-    fontSize: 14, // Adjust the size as needed
-    color: "#ffffff", // Choose a color that contrasts well with your background
-    position: "absolute", // Position it over or under the poster
-    bottom: 10, // Adjust this based on where you want it
-    left: 10, // Adjust this based on where you want it
+  posterContainerAndroid: {
+    marginHorizontal: 20,
+    marginBottom: 20,
+    alignItems: "center",
   },
 });
