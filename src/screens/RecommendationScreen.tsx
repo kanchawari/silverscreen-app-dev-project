@@ -15,7 +15,6 @@ import { Genre, Movie, TMDB_API_KEY } from "../types/movie";
 import NavBar from "../components/NavBar";
 import { DrawerActions } from "@react-navigation/native";
 
-// Define navigation type
 type RootStackParamList = {
   MovieDetails: { movie: Movie; genres: Genre[] };
 };
@@ -29,7 +28,6 @@ export default function RecommendationScreen() {
   const [error, setError] = useState("");
 
   useEffect(() => {
-    // Fetch genres from TMDB
     const fetchGenres = async () => {
       try {
         const res = await axios.get(
@@ -48,7 +46,6 @@ export default function RecommendationScreen() {
     setLoading(true);
     setError("");
     try {
-      // Fetch movies for the selected genre
       const res = await axios.get(
         `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&with_genres=${selectedGenre.id}&language=en-US&sort_by=popularity.desc&page=1`
       );
@@ -58,7 +55,6 @@ export default function RecommendationScreen() {
         setLoading(false);
         return;
       }
-      // Pick a random movie
       const randomMovie = movies[Math.floor(Math.random() * movies.length)];
       navigation.navigate("MovieDetails", { movie: randomMovie, genres });
     } catch (err) {

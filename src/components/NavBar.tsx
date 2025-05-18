@@ -143,7 +143,7 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontSize: 20,
     fontWeight: "bold",
-    marginLeft: 14, // spacing between logo and text
+    marginLeft: 14,
   },
   linksWrapper: {
     flexDirection: "row",

@@ -128,7 +128,7 @@ const styles = StyleSheet.create({
     fontWeight: "500",
   },
   contentWrapper: {
-    height: 40, // fixed height, tweak as needed
+    height: 40,
     justifyContent: "center",
     alignItems: "center",
     marginBottom: 10,

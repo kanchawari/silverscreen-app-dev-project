@@ -78,7 +78,6 @@ export default function WatchlistScreen({
     }, [])
   );
 
-  // Dynamic number of columns
   useEffect(() => {
     const updateNumColumns = () => {
       if (Platform.OS === "android") {
@@ -86,12 +85,12 @@ export default function WatchlistScreen({
         return;
       }
       const screenWidth = Dimensions.get("window").width;
-      const itemWidth = 300; // adjust based on your item size
+      const itemWidth = 300;
       const columns = Math.floor(screenWidth / itemWidth);
       setNumColumns(columns > 0 ? columns : 1);
     };
 
-    updateNumColumns(); // initial
+    updateNumColumns();
 
     const subscription = Dimensions.addEventListener(
       "change",
@@ -103,7 +102,6 @@ export default function WatchlistScreen({
     };
   }, []);
 
-  // Responsive poster size for Android
   const posterMargin = 28;
   const posterWidth =
     Platform.OS === "android"
@@ -186,8 +184,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#151518",
-    /*padding: 16,
-    paddingTop: 32,*/
   },
   title: {
     fontSize: 24,
@@ -204,8 +200,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   posterContainer: {
-    /*flex: 1,*/
-    /*margin: 20,*/
     marginHorizontal: 20,
     marginBottom: 20,
     alignItems: "center",
@@ -213,7 +207,6 @@ const styles = StyleSheet.create({
   poster: {
     width: 240,
     height: 360,
-    /*borderRadius: 4,*/
     backgroundColor: "#ccc",
   },
   flatList: {
@@ -250,17 +243,7 @@ const styles = StyleSheet.create({
   },
   emptyContainer: { flex: 1, justifyContent: "center", alignItems: "center" },
   emptyText: { color: "#fff", fontSize: 22, fontWeight: "bold" },
-  popularityText: {
-    // For debugging
-    fontSize: 14, // Adjust the size as needed
-    color: "#ffffff", // Choose a color that contrasts well with your background
-    position: "absolute", // Position it over or under the poster
-    bottom: 10, // Adjust this based on where you want it
-    left: 10, // Adjust this based on where you want it
-  },
   posterContainerAndroid: {
-    /*flex: 1,*/
-    /*margin: 20,*/
     marginHorizontal: 20,
     marginBottom: 20,
     alignItems: "center",

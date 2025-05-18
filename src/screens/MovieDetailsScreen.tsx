@@ -98,19 +98,16 @@ export default function MovieDetailsScreen({
         fetchedReviews.push({ id: doc.id, ...doc.data() });
       });
 
-      // Sort reviews: user's reviews first, then by most recent timestamp
       const sortedReviews = fetchedReviews.sort((a, b) => {
         const currentUser = auth.currentUser?.uid;
 
         const aIsUser = a.userId === currentUser ? 0 : 1;
         const bIsUser = b.userId === currentUser ? 0 : 1;
 
-        // Sort by: user's reviews (0) before others (1)
         if (aIsUser !== bIsUser) {
           return aIsUser - bIsUser;
         }
 
-        // Then sort by timestamp (most recent first)
         const aTime = a.timestamp?.toDate?.() || new Date(0);
         const bTime = b.timestamp?.toDate?.() || new Date(0);
         return bTime.getTime() - aTime.getTime();
@@ -139,13 +136,11 @@ export default function MovieDetailsScreen({
     if (!userId) return;
 
     try {
-      setDeletingReviewId(reviewId); // Start loading
+      setDeletingReviewId(reviewId);
 
-      // Delete review from movie subcollection
       const reviewRef = doc(db, "movies", String(movieId), "reviews", reviewId);
       await deleteDoc(reviewRef);
 
-      // Remove review from user field
       const userRef = doc(db, "users", userId);
       const userSnap = await getDoc(userRef);
       if (userSnap.exists()) {
@@ -162,7 +157,7 @@ export default function MovieDetailsScreen({
         await updateDoc(userRef, { reviews: updatedReviews });
       }
 
-      fetchReviews(); // Refresh reviews list
+      fetchReviews();
 
       Toast.show({
         type: "success",
@@ -177,7 +172,7 @@ export default function MovieDetailsScreen({
         text1: "Error deleting review",
       });
     } finally {
-      setDeletingReviewId(null); // Stop loading
+      setDeletingReviewId(null);
     }
   };
 
@@ -256,7 +251,6 @@ export default function MovieDetailsScreen({
         const apiKey = TMDB_API_KEY;
         const movieId = movie.id;
 
-        // Fetch movie details and credits in parallel
         const [detailsRes, creditsRes] = await Promise.all([
           axios.get(
             `https://api.themoviedb.org/3/movie/${movieId}?api_key=${TMDB_API_KEY}&language=en-US`
@@ -276,7 +270,6 @@ export default function MovieDetailsScreen({
           creditsData.cast?.slice(0, 5).map((member: any) => member.name) || [];
         setCast(topCast);
 
-        // Find the director from the crew
         const director = creditsData.crew?.find(
           (person: any) => person.job === "Director"
         );
@@ -318,7 +311,7 @@ export default function MovieDetailsScreen({
   };
 
   const formatReviewDate = (date: Date) => {
-    return formatDistanceToNow(date, { addSuffix: true }); // Adds "ago"
+    return formatDistanceToNow(date, { addSuffix: true });
   };
 
   if (Platform.OS === "android") {

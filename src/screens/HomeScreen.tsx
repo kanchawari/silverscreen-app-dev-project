@@ -63,7 +63,6 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
           let filteredMovies: Movie[] = [];
           let titleSearchMovies: Movie[] = [];
 
-          // Fetch discover by year or genre
           for (let page = 1; page <= pageCount; page++) {
             const url = isYear
               ? `https://api.themoviedb.org/3/discover/movie?api_key=${TMDB_API_KEY}&language=en-US&primary_release_year=${query}&page=${page}&include_adult=false`
@@ -73,7 +72,6 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
             filteredMovies = [...filteredMovies, ...res.data.results];
           }
 
-          // Fetch title search results
           for (let page = 1; page <= pageCount; page++) {
             const res = await axios.get(
               `https://api.themoviedb.org/3/search/movie?api_key=${TMDB_API_KEY}&language=en-US&query=${encodeURIComponent(
@@ -83,14 +81,12 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
             titleSearchMovies = [...titleSearchMovies, ...res.data.results];
           }
 
-          // Combine both results and dedupe by id
           const combined = [...filteredMovies, ...titleSearchMovies];
           const uniqueCombined = combined.filter(
             (movie, index, self) =>
               index === self.findIndex((m) => m.id === movie.id)
           );
 
-          // Filter out movies with no poster/overview and NSFW content
           const finalResults = uniqueCombined.filter((movie) => {
             const title = movie.title.toLowerCase();
             const overview = movie.overview?.toLowerCase() || "";
@@ -102,7 +98,6 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
 
           setMovies(finalResults.sort((a, b) => b.popularity - a.popularity));
         } else {
-          // Normal text search on titles
           const pageCount = query.length <= 3 ? 8 : 6;
           let allResults: Movie[] = [];
 
@@ -120,7 +115,6 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
               index === self.findIndex((m) => m.id === movie.id)
           );
 
-          // Filter out NSFW and missing poster/overview
           const filteredResults = uniqueResults.filter((movie) => {
             const title = movie.title.toLowerCase();
             const overview = movie.overview?.toLowerCase() || "";
@@ -153,12 +147,12 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
     }
     const updateNumColumns = () => {
       const screenWidth = Dimensions.get("window").width;
-      const itemWidth = 300; // adjust based on your item size
+      const itemWidth = 300;
       const columns = Math.floor(screenWidth / itemWidth);
       setNumColumns(columns > 0 ? columns : 1);
     };
 
-    updateNumColumns(); // initial
+    updateNumColumns();
 
     const subscription = Dimensions.addEventListener(
       "change",
@@ -170,7 +164,6 @@ export default function HomeScreen({ navigation, route }: HomeScreenProps) {
     };
   }, []);
 
-  // Responsive poster size for Android
   const posterMargin = 28;
   const posterWidth =
     Platform.OS === "android"
@@ -283,8 +276,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#151518",
-    /*padding: 16,
-    paddingTop: 32,*/
   },
   title: {
     fontSize: 24,
@@ -300,8 +291,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   posterContainer: {
-    /*flex: 1,*/
-    /*margin: 20,*/
     marginHorizontal: 20,
     marginBottom: 20,
     alignItems: "center",
@@ -309,7 +298,6 @@ const styles = StyleSheet.create({
   poster: {
     width: 240,
     height: 360,
-    /*borderRadius: 4,*/
     backgroundColor: "#ccc",
   },
   flatList: {
@@ -343,14 +331,6 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
-  },
-  popularityText: {
-    // For debugging
-    fontSize: 14, // Adjust the size as needed
-    color: "#ffffff", // Choose a color that contrasts well with your background
-    position: "absolute", // Position it over or under the poster
-    bottom: 10, // Adjust this based on where you want it
-    left: 10, // Adjust this
   },
   posterContainerAndroid: {
     flex: 1,

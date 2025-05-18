@@ -19,7 +19,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowOffset: { width: 0, height: 4 },
     shadowRadius: 8,
-    elevation: 6, // for Android
+    elevation: 6,
   },
   loginBoxMobile: {
     backgroundColor: "#212121",

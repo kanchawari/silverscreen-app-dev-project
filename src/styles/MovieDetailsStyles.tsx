@@ -4,8 +4,6 @@ const styles = StyleSheet.create({
   detailsRoot: {
     flex: 1,
     backgroundColor: "#151518",
-    /*padding: 16,
-    paddingTop: 32,*/
   },
   detailsRow: {
     flexDirection: "row",
@@ -16,7 +14,6 @@ const styles = StyleSheet.create({
   detailsPoster: {
     width: 280,
     height: 420,
-    /*borderRadius: 8,*/
     marginRight: 24,
   },
   detailsCol: {
@@ -105,7 +102,7 @@ const styles = StyleSheet.create({
     padding: 12,
     marginBottom: 16,
     marginTop: 8,
-    width: "81%", // To prevent full horizontal width usage
+    width: "81%",
     alignSelf: "center",
   },
 
@@ -124,12 +121,12 @@ const styles = StyleSheet.create({
   userIcon: {
     width: 30,
     height: 30,
-    borderRadius: 15, // Circular user icon
-    marginRight: 10, // Space between icon and text
+    borderRadius: 15,
+    marginRight: 10,
   },
 
   reviewHeaderText: {
-    flexDirection: "column", // Stack username and date vertically
+    flexDirection: "column",
   },
 
   reviewUser: {
@@ -139,7 +136,7 @@ const styles = StyleSheet.create({
   },
 
   iconWrapper: {
-    width: 20, // fixed width & height matching your icon size
+    width: 20,
     height: 20,
     justifyContent: "center",
     alignItems: "center",
@@ -151,20 +148,20 @@ const styles = StyleSheet.create({
   },
 
   reviewDate: {
-    color: "#ccc", // Lighter color for date
+    color: "#ccc",
     fontSize: 14,
     marginLeft: 10,
   },
 
   starRating: {
-    marginLeft: "auto", // Push star rating to the right
+    marginLeft: "auto",
   },
 
   reviewText: {
     color: "#fff",
     fontSize: 16,
     marginTop: 4,
-    lineHeight: 20, // For better readability
+    lineHeight: 20,
   },
 
   writeReviewBtn: {

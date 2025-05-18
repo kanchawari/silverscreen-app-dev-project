@@ -12,8 +12,6 @@ import {
 } from "react-native";
 import StarRating from "react-native-star-rating-widget";
 import Toast from "react-native-toast-message";
-import { Toast as RNToast } from "react-native-toast-message/lib/src/Toast";
-import { formatDistanceToNow } from "date-fns";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import axios from "axios";
@@ -49,7 +47,7 @@ export default function MovieReviewScreen({
   const [loading, setLoading] = useState(false);
 
   const submitReview = async () => {
-    if (loading) return; // Prevent duplicate submissions
+    if (loading) return;
     setLoading(true);
     try {
       const userId = auth.currentUser?.uid;
@@ -307,8 +305,6 @@ const styles = StyleSheet.create({
   detailsRoot: {
     flex: 1,
     backgroundColor: "#151518",
-    /*padding: 16,
-    paddingTop: 32,*/
   },
   detailsRow: {
     flexDirection: "row",
@@ -319,7 +315,6 @@ const styles = StyleSheet.create({
   detailsPoster: {
     width: 360,
     height: 540,
-    /*borderRadius: 8,*/
     marginRight: 24,
   },
   detailsCol: {
@@ -354,7 +349,7 @@ const styles = StyleSheet.create({
     marginTop: 30,
     marginLeft: 40,
     fontSize: 18,
-    textAlignVertical: "top", // Aligns text at the top for multiline
+    textAlignVertical: "top",
   },
 
   submitReviewBtn: {
